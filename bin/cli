@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'rubygems'
+  require 'isono'
+rescue LoadError => e
+  $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+  require 'isono'
+end
+
+require 'optparse'
+
+common = {:amqp_server_uri=>'amqp://localhost/'}
+
+parser = OptionParser.new { |opt|
+}
+
+args = ARGV.dup
+
+parser.order!(args)
+subcommand = args.shift
+
+subopts={}
+case subcommand
+when 'load_resource'
+  type = :command
+  namespace = 'resource_locator'
+  command = 'install'
+  subopts[:resource_name] = args.shift
+  subopts[:agent_id] = args.shift
+when 'unload_resource'
+when 'show_resource'
+  
+end
+
+require 'eventmachine'
+
+EM.run {
+  cc = Isono::CommandClient.new
+  cc.connect(common[:amqp_server_uri]) {
+
+    case type
+    when :command
+      cc.send_command(namespace, command, subopts)
+    when :event
+      cc.send_event(event)
+    end
+
+    EM.next_tick {
+      cc.close { EM.stop }
+    }
+  }
+}

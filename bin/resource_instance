@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+require 'isono'
+require 'isono/amqp_client'
+
+require 'optparse'
+
+options = {
+  :amqp_server_uri => URI.parse('amqp://guest:guest@localhost/'),
+  :uuid => nil
+}
+
+parser = OptionParser.new { |opts|
+  opts.on( "-s", "--server AMQP_URI", "amqp broker server to connect" ) {|str|
+    begin
+      options[:amqp_server_uri] = URI.parse(str)
+    rescue URI::InvalidURIError => e
+      abort "#{e}"
+    end
+  }
+  opts.on("-i UUID", ""){ |str|
+    options[:uuid] = str
+  }
+}
+
+args = ARGV.dup
+
+parser.parse!(args)
+parser.order!(args)
+manifest_path = args.first || abort("no resource.manifest path given")
+
+resource_dir = File.dirname(manifest_path)
+uuid = options[:uuid] || File.basename(resource_dir)
+ri_manifest = Isono::ResourceManifest.load(manifest_path)
+
+manifest = Isono::Manifest.new(resource_dir) {
+  manager Isono::ManagerModules::EventChannel
+  manager Isono::ManagerModules::MqCommand
+  manager Isono::ManagerModules::ResourceInstance
+
+  node_name 'ri'
+}
+
+manifest.node_id uuid
+manifest.config.resource_instance.resource_manifest = ri_manifest
+
+EventMachine.epoll
+EventMachine.run {
+  Isono::Agent.start(manifest, options)
+}

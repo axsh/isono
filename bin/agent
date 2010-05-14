@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require 'isono'
+Isono::Runner::Agent.new(ARGV).run
