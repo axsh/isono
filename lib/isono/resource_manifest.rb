@@ -21,12 +21,7 @@ module Isono
       end
 
       def load_path(path)
-        @manifest.load_path << if Pathname.new(path).absolute?
-                                 path
-                               else
-                                 File.expand_path(path, @manifest.resource_root_path)
-                               end
-        @manifest.load_path.uniq!
+        @manifest.append_load_path(path)
       end
 
       def name(name)
@@ -73,9 +68,23 @@ module Isono
       @entry_state = {}
       @exit_state  = {}
       @helpers = {}
-      @load_path = ['lib']
+      @load_path = []
+
+      append_load_path('lib')
     end
 
+    def append_load_path(path)
+      real_path = if Pathname.new(path).absolute?
+                    path
+                  else
+                    File.expand_path(path, @resource_root_path)
+                  end
+      unless $LOAD_PATH.member? real_path
+        load_path << path
+        $LOAD_PATH.unshift real_path
+      end
+    end
+    
     class StateItem
       def initialize()
         @task = nil
