@@ -42,3 +42,13 @@ class AmqpStub < Isono::Agent
     m
   end
 end
+
+
+def em_fork(main_cb, post_cb=nil)
+  fork {
+    EM.run {
+      main_cb.call
+    }
+    post_cb.call if post_cb
+  }
+end
