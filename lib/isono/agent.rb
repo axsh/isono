@@ -10,6 +10,12 @@ module Isono
     include EventObservable
     include ManagerHost
 
+    def self.inherited(klass)
+      klass.class_eval {
+        include Logger
+      }
+    end
+
     def self.instance
       @instance
     end
