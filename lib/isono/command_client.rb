@@ -3,21 +3,17 @@
 require 'isono'
 
 module Isono
-  class CommandClient
-    include AmqpClient
-    include Logger
-    include ManagerHost
+  class CommandClient < Agent
 
     def initialize
-      @uuid = Util.gen_id
-    end
+      m = Manifest.new(Dir.pwd) {
+        node_name 'command'
+        node_id Util.gen_id
 
-    def managers
-      [ManagerModules::EventChannel, ManagerModules::MqCommand]
-    end
-
-    def agent_id
-      'command-' + @uuid
+        manager ManagerModules::EventChannel
+        manager ManagerModules::MqCommand
+      }
+      super(m)
     end
 
     def send_event(event, data, sender=agent_id)
@@ -26,19 +22,14 @@ module Isono
       }
     end
 
-    def send_command(namespace, command, args={})
-      logger.debug("send_command(#{namespace}, #{command}, #{args.inspect})")
+    def sync_command(namespace, command, args={})
+      ManagerModules::MqCommand.instance.sync_request(namespace, command, args)
+    end
+
+    def async_command(namespace, command, args={}, &blk)
       EventMachine.schedule {
-        ManagerModules::MqCommand.instance.send(namespace, command, args)
+        ManagerModules::MqCommand.instance.async_request(namespace, command, args, &blk)
       }
-    end
-
-    def on_connect
-      load_managers
-    end
-
-    def on_close
-      unload_managers
     end
     
   end
