@@ -21,7 +21,7 @@ module Isono
       m
     end
 
-    attr_reader :managers, :app_root
+    attr_reader :managers, :app_root, :command
     
     # @param [String] app_root Application root folder
     # @param [block]
@@ -30,6 +30,8 @@ module Isono
       resolve_abs_app_root(app_root)
       @config = ConfigStruct.new
       @config.app_root = app_root
+
+      @command = CommandTable.new
       instance_eval(&blk) if blk
       load_config
     end
@@ -45,6 +47,10 @@ module Isono
         sec_name = manager_class.instance_variable_get(:@config_section_name)
         #sec_builder.call(ConfigStructBuilder.new(@config.add_section(sec_name)))
         ConfigStructBuilder.new(@config.add_section(sec_name), &sec_builder)
+      end
+      ns = manager_class.instance_variable_get(:@command_namespace)
+      if ns 
+        command.register(ns[:namespace], &ns[:block])
       end
       @managers << [manager_class.instance, *args]
     end

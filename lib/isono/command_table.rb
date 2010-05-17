@@ -4,7 +4,6 @@ require 'singleton'
 
 module Isono
   class CommandTable
-    include Singleton
     include Logger
     include EventObservable
 

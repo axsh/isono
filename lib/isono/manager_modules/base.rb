@@ -23,7 +23,7 @@ module Isono
       end
 
       def self.command_namespace(namespace, &blk)
-        CommandTable.instance.register(namespace, &blk)
+        @command_namespace = {:namespace=>namespace, :block => blk}
       end
 
       def self.inherited(klass)
