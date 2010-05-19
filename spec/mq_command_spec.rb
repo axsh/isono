@@ -75,18 +75,22 @@ describe "MqCommand and CommandClient" do
   
   it "send async_command" do
     svr_connect(proc{|c|
-                }, proc{
-                  MM::MqCommand.instance.add_observer(:command_received) { |m|
+                  EventRouter.subscribe('mq_command/request_received', '*') { |m|
                     m[:namespace].should.equal 'test'
                     m[:command].should.equal 'test1'
                   }
-                  MM::MqCommand.instance.add_observer(:command_response_back) { |d|
-                    d[:type].should.equal :success
+                  EventRouter.subscribe('mq_command/response_sent', '*') { |m|
+                    m[:type].should.equal :success
                     EM.next_tick { EM.stop }
                   }
+                }, proc{
                 })
 
     client_connect(proc {|c|
+                     EventRouter.subscribe('mq_command/request_sent', '*') { |m|
+                       m[:state].should.equal :waiting
+                     }
+
                      req0 = c.async_command('test', 'test1') { |req|
                        req.on_success { |res|
                          req0.ticket.should.equal req.ticket
@@ -95,9 +99,6 @@ describe "MqCommand and CommandClient" do
                        }
                      }
                    },proc {
-                     MM::MqCommand.instance.add_observer(:command_sent) { |req|
-                       req.state.should.equal :waiting
-                     }
                    })
     
     Process.waitall.all? { |s|

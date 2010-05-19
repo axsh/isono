@@ -16,7 +16,7 @@ module Isono
           if req
             data = Serializer.instance.unmarshal(data)
             req.process_event(:on_received, data)
-            fire_event(:command_response_received, req, data)
+            EventRouter.emit('mq_command/request_received', agent.agent_id, data)
             begin
               if data[:type] == :error
                 req.error_cb.call(data[:body]) if req.error_cb
@@ -77,7 +77,7 @@ module Isono
                   )
         
         req.process_event(:on_sent)
-        fire_event(:command_sent, req)
+        EventRouter.emit('mq_command/request_sent', agent.agent_id, req.hash)
         req
       end
 
@@ -111,7 +111,7 @@ module Isono
           keytable = agent.manifest.command.namespaces[data[:namespace]]
           next unless keytable
           
-          fire_event(:command_received, data)
+          EventRouter.emit('mq_command/request_received', agent.agent_id, data)
 
           begin
             ret = keytable.dispatch(data[:command], data[:args])
@@ -130,7 +130,7 @@ module Isono
                                                      {:key=>header.reply_to,
                                                        :message_id=>header.message_id}
                                                      )
-            fire_event(:command_response_back, msg)
+            EventRouter.emit('mq_command/response_sent', agent.agent_id, msg)
           end
         }
       end

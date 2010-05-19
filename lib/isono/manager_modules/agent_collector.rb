@@ -36,12 +36,13 @@ module Isono
               if sm.state != :timeout && diff_time > config_section.timeout_sec
                 sm.on_timeout
                 row.save_changes
-                fire_event(:agent_timeout, row)
+                EventRouter.emit('agent_collector/timedout', agent.agent_id, row.hash)
               end
               
               if diff_time > config_section.kill_sec
                 sm.on_unmonitor
-                fire_event(:agent_killed, row)
+
+                EventRouter.emit('agent_collector/killed', agent.agent_id, row.hash)
                 row.delete
               end
             }
@@ -60,10 +61,10 @@ module Isono
             a[:last_ping_at] = Time.now
             if a.new?
               a.save
-              fire_event(:agent_monitored, a)
+              EventRouter.emit('agent_collector/monitored', agent.agent_id, a.hash)
             else
               a.save_changes
-              fire_event(:agent_pong, a)
+              EventRouter.emit('agent_collector/pong', agent.agent_id, a.hash)
             end
           }
         }
