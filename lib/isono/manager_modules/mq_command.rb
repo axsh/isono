@@ -1,6 +1,7 @@
 
 require 'thread'
 require 'statemachine'
+require 'ostruct'
 
 module Isono
   module ManagerModules
@@ -138,20 +139,23 @@ module Isono
         "command-provider.#{ns}"
       end
       
-      class AsyncRequestContext
-        attr_reader :ticket, :success_cb, :error_cb, :request
-        attr_accessor :timeout_sec, :timer
+      class AsyncRequestContext < OpenStruct
+        attr_reader :error_cb, :success_cb
+        attr_accessor :timer
 
         def initialize(namespace, command, args)
-          @request = {
+          super()
+
+          @table[:request] = {
             :namespace=> namespace,
             :command => command,
             :args => args
           }.freeze
-          @ticket = Util.gen_id
+          @table[:ticket] = Util.gen_id
+          @table[:timeout_sec] = 0
           @success_cb = nil
           @error_cb = nil
-          @timeout_sec = 0
+          @timer = nil
 
           @stm = Statemachine.build {
             trans :init, :on_ready, :ready
@@ -167,6 +171,10 @@ module Isono
 
         def process_event(ev, *args)
           @stm.process_event(ev, *args)
+        end
+
+        def hash
+          @table.dup.merge({:state=>self.state})
         end
 
         def on_success=(cb)
