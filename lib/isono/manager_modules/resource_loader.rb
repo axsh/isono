@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'fileutils'
+
 module Isono
   module ManagerModules
     class ResourceLoader < Base
@@ -15,7 +17,8 @@ module Isono
         @debug_event = true
         @thread_pool = ThreadPool.new(1, self.class.to_s)
         @running_child = {}
-        raise "resource_save_dir does not exist: #{config_section.resource_save_dir}" unless File.directory?(config_section.resource_save_dir)
+
+        FileUtils.mkpath(config_section.resource_save_dir) unless File.directory?(config_section.resource_save_dir)
 
         
         agent.amq.direct('resource')
