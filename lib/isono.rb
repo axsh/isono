@@ -32,6 +32,7 @@ module Isono
     autoload :ResourceLoader, 'isono/manager_modules/resource_loader'
     autoload :MqCommand, 'isono/manager_modules/mq_command'
     autoload :ResourceInstance, 'isono/manager_modules/resource_instance'
+    autoload :EventLogger, 'isono/manager_modules/event_logger'
   end
   module Runner
     autoload :Agent, 'isono/runner/agent'
@@ -40,6 +41,7 @@ module Isono
   module Models
     autoload :AgentPool, 'isono/models/agent_pool'
     autoload :ResourceInstance, 'isono/models/resource_instance'
+    autoload :EventLog, 'isono/models/event_log'
   end
 
 
