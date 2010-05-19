@@ -18,7 +18,17 @@ module Isono
         # GC event trigger for agent timer & status
         @gc_timer = EM::PeriodicTimer.new(config_section.gc_period) {
           DataStore.pass {
-            Models::AgentPool.dataset.each { |row|
+            # Sqlite3 is unlikely to modify table while iterating
+            # the result set. the following is the case of the
+            # iteration for the opened result set.
+            # Models::AgentPool.dataset.each { |row|
+            # 
+            # while Model.dataset.all, it returns a Ruby array
+            # containing rows so that i had no table lock exception.
+            # see:
+            # http://www.mail-archive.com/sqlite-users@sqlite.org/msg03328.html
+            # TODO: paging support for the large result set.
+            Models::AgentPool.dataset.all.each { |row|
               sm = row.state_machine
               next if sm.state == :offline
 
