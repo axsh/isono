@@ -26,8 +26,8 @@ module Isono
 
         @inprogress = {}
         
-        raise "buffer_dir is not found: #{config_section.buffer_dir}" unless File.directory?(config_section.buffer_dir)
-        raise "complete_dir is not found: #{config_section.complete_dir}" unless File.directory?(config_section.complete_dir)
+        FileUtils.mkpath(config_section.buffer_dir) unless File.directory?(config_section.buffer_dir)
+        FileUtils.mkpath(config_section.complete_dir) unless File.directory?(config_section.complete_dir)
 
         agent.amq.queue("filerecv.#{agent.agent_id}", {:exclusive=>true}).bind('file', {:key=>"filerecv.#{agent.agent_id}"}).subscribe { |data|
           data = Marshal.load(data)
