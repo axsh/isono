@@ -9,7 +9,6 @@ module Isono
     # derived from this class. The derived class will have the codes in
     # each  since this is mostly an abstruct class.
     class Base
-      include EventObservable
 
       def self.dependency(depmgrclass)
         raise ArgumentError unless depmgrclass < Isono::ManagerModules::Base
@@ -44,12 +43,6 @@ module Isono
       attr_accessor :agent, :initialized
       alias :initialized? :initialized
 
-      # this is the singleton class. the initialize() can not take any
-      # args.
-      def initialize
-        initialize_event_observable
-      end
-      
       def config_section
         agent.manifest.config.send(self.class.instance_variable_get(:@config_section_name))
       end
