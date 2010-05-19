@@ -67,12 +67,12 @@ module Isono
       protected
       def subscribe_event(event_type, sender, &blk)
         raise "EventChannel has to be loaded" unless EventChannel.instance.initialized?
-        EventChannel.instance.subscribe(event_type, agent.agent_id, sender, &blk)
+        EventChannel.instance.subscribe(event_type, sender, &blk)
       end
 
       def unsubscribe_event(event_type)
         raise "EventChannel has to be loaded" unless EventChannel.instance.initialized?
-        EventChannel.instance.unsubscribe(event_type, agent.agent_id)
+        EventChannel.instance.unsubscribe(event_type)
       end
     end
   end

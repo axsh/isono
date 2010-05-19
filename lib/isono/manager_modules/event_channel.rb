@@ -29,25 +29,33 @@ module Isono
 
       def publish(evname, sender, message=nil)
         body = {
-          :event_published_at=> Time.now,
+          :event => evname,
+          :published_at=> Time.now,
           :sender  => sender,
           :origin_agent  => agent.agent_id,
           :message => message
         }
-
+        
         EventMachine.schedule {
           agent.amq.exchanges['event'].publish(Serializer.instance.marshal(body), {:key=>"#{evname}.#{sender}"})
         }
       end
       
-      def subscribe(evname, receiver_id, sender, &blk)
+      def subscribe(evname, sender, receiver_id=agent.agent_id, &blk)
         agent.define_queue("#{evname}-#{receiver_id}", 'event',
                            {:exclusive=>true, :key=>"#{evname}.#{sender}"}) { |data|
-          blk.call(Serializer.instance.unmarshal(data))
+          data = Serializer.instance.unmarshal(data)
+          case blk.arity
+          when 2
+            m = data.delete(:message)
+            blk.call(data, m)
+          when 1
+            blk.call(data[:message])
+          end
         }
       end
 
-      def unsubscribe(evname, receiver_id)
+      def unsubscribe(evname, receiver_id=agent.agent_id)
         EventMachine.schedule {
           q = agent.amq.queue("#{evname}-#{receiver_id}")
           q.unsubscribe
