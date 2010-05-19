@@ -42,6 +42,7 @@ module Isono
       
       def on_terminate
         @db_writer_thread.shutdown
+        @db.disconnect
       end
       
     end
