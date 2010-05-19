@@ -13,7 +13,7 @@ module Isono
   autoload :Monitor, 'isono/monitor'
   autoload :Manifest, 'isono/manifest'
   autoload :Serializer, 'isono/serializer'
-  #autoload :EventRouter, 'isono/event_router'
+  autoload :EventRouter, 'isono/event_router'
   autoload :EventObservable, 'isono/event_observable'
   autoload :EventDelegateContext, 'isono/event_delegate_context'
   autoload :ResourceManifest, 'isono/resource_manifest'
