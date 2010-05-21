@@ -144,15 +144,15 @@ module Isono
         attr_accessor :timer
 
         def initialize(namespace, command, args)
-          super()
-
-          @table[:request] = {
-            :namespace=> namespace,
-            :command => command,
-            :args => args
-          }.freeze
-          @table[:ticket] = Util.gen_id
-          @table[:timeout_sec] = 0
+          super({:request=>{
+                    :namespace=> namespace,
+                    :command => command,
+                    :args => args
+                  }.freeze,
+                  :ticket => Util.gen_id,
+                  :timeout_sec => 0.0 
+                })
+          
           @success_cb = nil
           @error_cb = nil
           @timer = nil
