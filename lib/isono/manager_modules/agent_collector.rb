@@ -19,7 +19,7 @@ module Isono
 
         command('list') { |req|
           DataStore.barrier {
-            Models::AgentPool.dataset.all
+            Models::AgentPool.dataset.all.map{|r| r.values }
           }
         }
       end
