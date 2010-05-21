@@ -16,8 +16,8 @@ module Isono
         
         @options = {
           :amqp_server_uri => URI.parse('amqp://guest:guest@localhost/'),
-          :log_file => '/var/log/wakame-agent.log',
-          :pid_file => '/var/run/wakame/wakame-agent.pid',
+          :log_file => nil,
+          :pid_file => nil,
           :daemonize => true
         }
         
@@ -51,11 +51,6 @@ module Isono
           Signal.trap(i) { Isono::Agent.stop{ remove_pidfile if @options[:daemonize]} }
         }
 
-        if @options[:daemonize]
-          daemonize(@options[:log_file])
-        end
-
-        #Initializer.run(:process_agent)
 
         # load manifest file
         manifest = Manifest.load_file(manifest_path.nil? ? @options[:manifest_path] : manifest_path)
@@ -68,8 +63,14 @@ module Isono
           # default manner. 
           manifest.node_id(default_node_id)
         end
-        
-        #EM.epoll if Wakame.config.eventmachine_use_epoll
+
+        @options[:log_file] ||= "/var/log/%s.log" % [manifest.node_name]
+        @options[:pid_file] ||= "/var/run/%s.pid" % [manifest.node_name]
+
+        if @options[:daemonize]
+          daemonize(@options[:log_file])
+        end
+
         EventMachine.epoll
         EventMachine.run {
           Isono::Agent.start(manifest, @options)
