@@ -14,6 +14,16 @@ module Isono
         gc_period 20.0
       end
 
+      command_namespace('agent_collector') do
+        desc "show agent"
+
+        command('list') { |req|
+          DataStore.barrier {
+            Models::AgentPool.dataset.all
+          }
+        }
+      end
+
       def on_init(args)
         # GC event trigger for agent timer & status
         @gc_timer = EM::PeriodicTimer.new(config_section.gc_period) {
