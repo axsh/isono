@@ -63,9 +63,16 @@ module Isono
       end
 
       def install(agent_id, resource_type)
+        raise ArgumentError, "agent_id has to be specifed" unless agent_id.nil? || agent_id == ''
+        raise ArgumentError, "resource_type has to be specifed" unless resource_type.nil? || resource_type == ''
+
+        DataStore.barrier {
+          raise "agent_id #{agent_id} can not be found." unless Models::AgentPool.find(:agent_id=>agent_id)
+        }
+        resfolder = File.expand_path(resource_type, config_section.resource_base_dir)
+        raise "unable to find the resource folder: #{resfolder}" unless File.directory?(resfolder)
+        
         @deploy_thread.pass {
-          resfolder = File.expand_path(resource_type, config_section.resource_base_dir)
-          raise "unable to find the resource folder: #{resfolder}" unless File.directory?(resfolder)
 
           uuid = Util.gen_id
           # make tmp archive to the tmp folder
@@ -95,18 +102,18 @@ module Isono
       end
 
       def uninstall(resource_uuid)
+        raise ArgumentError, "resource_uuid has to be specifed" unless resource_uuid.nil? || resource_uuid == ''
+        
         ri = DataStore.barrier {
           Models::ResourceInstance.find(:uuid=>resource_uuid)
         }
 
-        if ri.nil?
-          return
-        end
+        raise "ResourceInstance #{resource_uuid} can not be found." if ri.nil?
         
         msg = {:command=>:uninstall, :resource_uuid=>resource_uuid}
-        logger.info("#{ri.uuid}: #{ri.resource_type} being installed onto #{agent_id}")
+        logger.info("#{ri.uuid}: #{ri.resource_type} being uninstalled from #{ri.agent_id}")
         EventMachine.schedule {
-          agent.amq.direct('resource').publish(Marshal.dump(msg), {:key=>"resloader.#{agent_id}"})
+          agent.amq.direct('resource').publish(Marshal.dump(msg), {:key=>"resloader.#{ri.agent_id}"})
         }
       end
 
