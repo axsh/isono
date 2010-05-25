@@ -17,13 +17,11 @@ module Isono
         desc "show live resource instances"
 
         command('list_instances') { |req|
-          lst = []
           DataStore.barrier {
-            Models::ResourceInstance.dataset.each { |row|
-              lst << row.hash
+            Models::ResourceInstance.dataset.all.map { |row|
+              row.values
             }
           }
-          lst
         }
 
         command('install') { |req|
