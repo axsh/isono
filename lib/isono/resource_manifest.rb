@@ -2,6 +2,7 @@
 
 require 'statemachine'
 require 'pathname'
+require 'yaml'
 
 module Isono
   class ResourceManifest
@@ -55,14 +56,24 @@ module Isono
     
     def self.load(path)
       root_path = File.dirname(path)
-      buf = File.read(path)
       manifest = new(root_path)
-      Loader.new(manifest).instance_eval buf
+
+      # instance_data has to be loaded before manifest file
+      # evaluation.
+      inst_data_path = File.expand_path('instance_data.yml', root_path)
+      if File.file?(inst_data_path)
+        manifest.instance_data = YAML.load(inst_data_path)
+        manifest.instance_data.freeze
+      end
+
+      logger.info("Loading resource.manifest: #{path}")
+      buf = File.read(path)
+      Loader.new(manifest).instance_eval(buf, path)
       manifest
     end
 
     attr_reader :resource_root_path, :monitors, :entry_state, :exit_state, :helpers, :load_path
-    attr_accessor :name, :description, :stm, :state_monitor
+    attr_accessor :name, :description, :stm, :state_monitor, :instance_data
     
     def initialize(root_path)
       @resource_root_path = root_path

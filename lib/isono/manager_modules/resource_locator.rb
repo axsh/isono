@@ -26,7 +26,8 @@ module Isono
 
         command('install') { |req|
           ResourceLocator.instance.install(req.params[:agent_id],
-                                           req.params[:resource_name])
+                                           req.params[:resource_name],
+                                           req.params[:instance_data])
         }
         
         command('uninstall') { |req|
@@ -78,6 +79,10 @@ module Isono
           tmp_archive_dir = File.expand_path(uuid, config_section.resource_tmp_dir)
           logger.debug("recursive copying the resource folder: #{resfolder} -> #{tmp_archive_dir}")
           FileUtils.cp_r(resfolder, tmp_archive_dir)
+          # create [uuid]/instance_data.yml
+          File.open(File.expand_path('instance_data.yml', tmp_archive_dir), 'w') { |f|
+            YAML.dump(instance_data, f)
+          }
           logger.debug("cd #{config_section.resource_tmp_dir}; tar cf '#{uuid}.tar' '#{uuid}'")
           system("cd #{config_section.resource_tmp_dir}; tar cf '#{uuid}.tar' '#{uuid}'")
           FileUtils.rm_r(tmp_archive_dir)
@@ -86,6 +91,7 @@ module Isono
           ri.uuid = uuid
           ri.agent_id = agent_id
           ri.resource_type = resource_type
+          ri.instance_data = instance_data
           DataStore.barrier {
             ri.save
           }
