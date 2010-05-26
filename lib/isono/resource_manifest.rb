@@ -19,6 +19,7 @@ module Isono
       def description(desc)
         @manifest.description = desc
       end
+      alias :desc :description
 
       def statemachine(&blk)
         @manifest.stm = Statemachine.build(&blk)
@@ -51,7 +52,25 @@ module Isono
       def exit_state(state, &blk)
         (@manifest.exit_state[state] ||= StateItem.new).instance_eval(&blk)
       end
-            
+
+      def plugin(klass)
+        logger.debug("plugin: #{klass.to_s}")
+        if klass.const_defined?(:ClassMethods) && klass.const_get(:ClassMethods).is_a?(Module)
+          self.extend(klass.const_get(:ClassMethods))
+        end
+
+        #if klass.respond_to? :extend_task
+        if klass.const_defined?(:TaskMethods) && klass.const_get(:TaskMethods).is_a?(Module)
+          TaskBlock.class_eval {
+            include klass.const_get(:TaskMethods)
+          }
+        end
+      end
+
+      def manifest
+        @manifest
+      end
+        
     end
     
     def self.load(path)
