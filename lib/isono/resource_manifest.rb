@@ -103,25 +103,38 @@ module Isono
         @on_event
       end
       
-      def task(*args, &blk)
-        if args
-          @task = args
-        else
-          @task = blk if blk
-        end
+      def task(&blk)
+        @task = TaskBlock.new(&blk)
       end
     end
 
+    class TaskBlock
+      def initialize(&blk)
+        @blk = blk
+      end
 
+      def call(resource_instance)
+        @ri = resource_instance
+
+        instance_eval @blk
+      end
+      
+      private
+      def state_monitor
+        @ri.state_monitor
+      end
+      
+      def next_event(ev, *args)
+        @ri.stm.process_event(ev, *args)
+      end
+      
+    end
+    
     module RakeHelper
       def default_rakefile(rakefile)
         @manifest.helpers[:default_rakefile] = rakefile
       end
     end
     
-
-    
-    
   end
-  
 end

@@ -62,10 +62,10 @@ module Isono
         @manifest.entry_state.each { |state, sec|
           key = "on_entry_of_#{state}".to_sym
 
-          if sec.task.is_a? Proc
+          if sec.task
             edc.add_observer(key) { |args|
-              @worker_thread.pass {
-                TaskBlock.new(self).instance_eval &sec.task
+              @thread_pool.pass {
+                sec.task.call(self)
               }
             }
           end
@@ -111,34 +111,6 @@ module Isono
       end
 
 
-      def TaskBlock
-        def initialize(ri)
-          @ri = ri
-        end
-
-        private
-        def state_monitor
-          @ri.state_monitor
-        end
-
-        def process_event(ev, *args)
-          @ri.stm.process_event(ev, *args)
-        end
-
-        def rake(task, rakefile=nil, &blk)
-          rake_path = @ri.config_section.rake_bin_path || Gem.bin_path('rake', 'rake')
-          rakefile = if rakefile 
-                       rakefile
-                     elsif @ri.manifest.helpers[:default_rakefile]
-                       @ri.manifest.helpers[:default_rakefile]
-                     else
-                       raise "rakefile is not specified."
-                     end
-          rakefile = File.extend_path(rakefile, @ri.config_section.resource_manifest.resource_root_path)
-          system("#{rake_path} -f #{rakefile} #{task}") || raise("failed to run rake")
-        end
-
-      end
 
     end
   end
