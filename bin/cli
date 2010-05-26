@@ -20,18 +20,70 @@ args = ARGV.dup
 parser.order!(args)
 subcommand = args.shift
 
-subopts={}
+class CommandRequest
+  attr_accessor :namespace, :command, :opts
+  attr_accessor :print_proc
+
+  def initialize(&blk)
+    @opts = {}
+    instance_eval &blk if blk
+  end
+
+  def print_proc(&blk)
+    @print_proc = blk if blk
+    @print_proc
+  end
+end
+
+
+class EventRequest
+end
+
 case subcommand
 when 'load_resource'
-  type = :command
-  namespace = 'resource_locator'
-  command = 'install'
-  subopts[:resource_name] = args.shift
-  subopts[:agent_id] = args.shift
+  request = CommandRequest.new { |c|
+    c.namespace = 'resource_locator'
+    c.command = 'install'
+    OptionParser.new { |opt|
+      opt.on("-y FILE") { |path|
+        require 'yaml'
+        c.opts[:instance_data] = YAML.load(path)
+      }
+      opt.on("-e STR") { |buf|
+        
+        p c.opts[:instance_data] = eval(buf)
+      }
+    }.parse!(args)
+   
+    c.opts[:resource_name] = args.shift || abort("missing resource_name")
+    c.opts[:agent_id] = args.shift || abort("missing agent_id")
+  }
 when 'unload_resource'
+  request = CommandRequest.new { |c|
+    c.namespace = 'resource_locator'
+    c.command = 'uninstall'
+    c.opts[:resource_id] = args.shift
+  }
 when 'show_resource'
-  
+  request = CommandRequest.new { |c|
+    c.namespace = 'resource_locator'
+    c.command = 'list_instances'
+    c.print_proc { |res|
+      p res
+    }
+  }
+when 'show_agents'
+  request = CommandRequest.new { |c|
+    c.namespace = 'agent_collector'
+    c.command = 'list'
+    c.print_proc { |res|
+      p res
+    }
+  }
+else
+  abort("unknown command: #{subcommand}")
 end
+
 
 require 'eventmachine'
 
@@ -39,15 +91,32 @@ EM.run {
   cc = Isono::CommandClient.new
   cc.connect(common[:amqp_server_uri]) {
 
-    case type
-    when :command
-      cc.send_command(namespace, command, subopts)
-    when :event
+    case request
+    when CommandRequest
+      cc.async_command(request.namespace,
+                       request.command,
+                       request.opts) { |req|
+        req.timeout_sec = 5.0
+
+        req.on_success { |res|
+          request.print_proc.call(res) if request.print_proc 
+
+          cc.close { EM.stop }
+        }
+        req.on_error { |res|
+          case res
+          when :timeout
+            STDERR.puts "request timedout"
+          end
+          cc.close { EM.stop; exit 1; }
+        }
+      }
+    when EventRequest
       cc.send_event(event)
+      EM.next_tick {
+        cc.close { EM.stop }
+      }
     end
 
-    EM.next_tick {
-      cc.close { EM.stop }
-    }
   }
 }
