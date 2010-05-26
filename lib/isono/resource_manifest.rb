@@ -5,9 +5,12 @@ require 'pathname'
 
 module Isono
   class ResourceManifest
+    include Logger
 
     # DSL to define a new resource manifest.
     class Loader
+      include Logger
+      
       def initialize(m)
         @manifest = m
       end
