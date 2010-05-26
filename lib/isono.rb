@@ -43,6 +43,10 @@ module Isono
     autoload :ResourceInstance, 'isono/models/resource_instance'
     autoload :EventLog, 'isono/models/event_log'
   end
+  module Monitors
+    autoload :Base, 'isono/monitors/base'
+    autoload :PidFile, 'isono/monitors/pid_file'
+  end
 
 
   class << self

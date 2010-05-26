@@ -32,19 +32,20 @@ module Isono
       def name(name)
         @manifest.name = name
       end
-      
-      def state_monitor(monitor_class, args=[])
-        #raise ArgumentError unless
-        #monitor_class.is_kind?(Isono::Monitor)
-        @manifest.state_monitor = monitor_class
-        monitor(monitor_class, args)
+            
+      def state_monitor(monitor_class, &blk)
+        @manifest.state_monitor = self.monitor(monitor_class, &blk)
       end
       
-      def monitor(monitor_class, args=[])
-        #raise ArgumentError unless monitor_class.is_kind?(Isono::Monitor)
-        @manifest.monitors[monitor_class]=args
+      def monitor(monitor_class, &blk)
+        raise ArgumentError unless monitor_class.is_a?(Class) && monitor_class < Isono::Monitors::Base
+        raise "duplicate registration: #{monitor_class}" if @manifest.monitors.has_key?(monitor_class)
+        
+        m = monitor_class.new()
+        m.instance_eval &blk if blk
+        @manifest.monitors[monitor_class] = m
       end
-      
+
       def entry_state(state, &blk)
         (@manifest.entry_state[state] ||= StateItem.new).instance_eval(&blk)
       end

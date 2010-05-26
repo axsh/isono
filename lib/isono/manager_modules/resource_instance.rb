@@ -41,7 +41,8 @@ module Isono
           $LOAD_PATH.unshift path
         }
         
-        @manifest.monitors.each { |mon|
+        @manifest.monitors.values.each { |mon|
+          mon.start
         }
         
         if @manifest.state_monitor
