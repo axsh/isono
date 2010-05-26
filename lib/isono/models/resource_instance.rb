@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'digest/sha1'
-
 module Isono
   module Models
     class ResourceInstance < Sequel::Model
