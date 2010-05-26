@@ -4,7 +4,7 @@ module Isono
   class EventRouter
     Channel = ManagerModules::EventChannel
 
-    def self.emit(evname, sender, args={})
+    def self.emit(evname, sender=nil, args={})
       Channel.instance.publish(evname, sender, args)
     end
 

@@ -27,7 +27,8 @@ module Isono
       def on_terminate
       end
 
-      def publish(evname, sender, message=nil)
+      def publish(evname, sender=nil, message=nil)
+        sender ||= agent.agent_id
         body = {
           :event => evname,
           :published_at=> Time.now,
