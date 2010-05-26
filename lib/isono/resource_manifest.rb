@@ -162,8 +162,37 @@ module Isono
     end
     
     module RakeHelper
-      def default_rakefile(rakefile)
-        @manifest.helpers[:default_rakefile] = rakefile
+      module ClassMethods
+        def default_rakefile(rakefile)
+          rakefile =
+            if Pathname.new(rakefile).absolute?
+              rakefile.dup
+            else
+              File.expand_path(rakefile, @manifest.resource_root_path)
+            end
+          raise "File does not exist: #{rakefile}" unless File.exist?(rakefile)
+          @manifest.helpers[:default_rakefile] = rakefile
+        end
+
+        def rake_bin_path(path)
+          @manifest.helpers[:rake_bin_path] = path
+        end
+      end
+
+      module TaskMethods
+        def rake(task, rakefile=nil, &blk)
+          rake_path = @ri.manifest.helpers[:rake_bin_path] || Gem.bin_path('rake', 'rake')
+          rakefile = if rakefile
+                       rakefile
+                     elsif @ri.manifest.helpers[:default_rakefile]
+                       @ri.manifest.helpers[:default_rakefile]
+                     else
+                       raise "Rakefile is not specified."
+                     end
+
+          logger.debug("#{rake_path} -f #{rakefile} #{task}")
+          system("#{rake_path} -f #{rakefile} #{task}") || raise("failed to run rake")
+        end
       end
     end
     

@@ -10,7 +10,6 @@ module Isono
       config_section do
         desc "Instance ref of resource.manifest file"
         resource_manifest nil
-        rake_bin_path nil
       end
 
       attr_reader :state_monitor, :monitors
