@@ -60,9 +60,9 @@ module Isono
         @deploy_thread.shutdown
       end
 
-      def install(agent_id, resource_type)
-        raise ArgumentError, "agent_id has to be specifed" unless agent_id.nil? || agent_id == ''
-        raise ArgumentError, "resource_type has to be specifed" unless resource_type.nil? || resource_type == ''
+      def install(agent_id, resource_type, instance_data={})
+        raise ArgumentError, "agent_id has to be specifed" if agent_id.nil? || agent_id == ''
+        raise ArgumentError, "resource_type has to be specifed" if resource_type.nil? || resource_type == ''
 
         DataStore.barrier {
           raise "agent_id #{agent_id} can not be found." unless Models::AgentPool.find(:agent_id=>agent_id)
@@ -100,7 +100,7 @@ module Isono
       end
 
       def uninstall(resource_uuid)
-        raise ArgumentError, "resource_uuid has to be specifed" unless resource_uuid.nil? || resource_uuid == ''
+        raise ArgumentError, "resource_uuid has to be specifed" if resource_uuid.nil? || resource_uuid == ''
         
         ri = DataStore.barrier {
           Models::ResourceInstance.find(:uuid=>resource_uuid)
