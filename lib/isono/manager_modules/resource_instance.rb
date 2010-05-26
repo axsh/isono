@@ -51,7 +51,8 @@ module Isono
         edc = EventDelegateContext.new(@manifest.stm)
         # common event handlers
         edc.add_observer(:on_entry_state) { |state, arg|
-          fire_event(:resource_state_changed, common_args({:state=>state, :args=>arg}))
+          EventRouter.emit('resource_instance/state_changed', nil,
+                           common_args({:state=>state, :args=>arg}))
         }
         edc.add_observer(:on_exit_state) { |arg|
           unsubscribe_event_all
@@ -77,11 +78,11 @@ module Isono
         }
         
         @manifest.stm.process_event(:on_load)
-        fire_event(:resource_loaded, common_args())
+        EventRouter.emit('resource_instance/loaded', nil, common_args())
       end
       
       def unload
-        fire_event(:resource_unloaded, common_args())
+        EventRouter.emit('resource_instance/unloaded', nil, common_args())
       end
       
       private
