@@ -6,6 +6,7 @@ module Isono
   module ManagerModules
     class ResourceLoader < Base
       include Logger
+      include EventObservable
 
       config_section do |c|
         c.desc 'the root directory to save the resource archive'
@@ -14,6 +15,7 @@ module Isono
       end
       
       def on_init(args)
+        initialize_event_observable
         @debug_event = true
         @thread_pool = ThreadPool.new(1, self.class.to_s)
         @running_child = {}
@@ -43,7 +45,7 @@ module Isono
 
       protected
       def on_event_fired(evtype, *args)
-        EventChannel.instance.publish(evtype, agent.agent_id, args.first)
+        EventRouter.emit("resource_loader/#{evtype.to_s}", agent.agent_id, args.first)
       end
 
       private
@@ -99,7 +101,7 @@ module Isono
         popenobj = EM.popen(cmd, EmSystemCb, STDOUT, method(:catch_child_exit))
         pid = EventMachine.get_subprocess_pid(popenobj.signature)
         @running_child[pid] = {:resource_uuid=>resource_uuid, :pid=>pid}
-        fire_event(:resource_process_start, @running_child[pid].dup)
+        fire_event(:instance_start, @running_child[pid].dup)
       end
 
 
@@ -118,9 +120,9 @@ module Isono
         c = @running_child.delete(exit_stat.pid)
         if c
           if exit_stat.exitstatus != 0
-            fire_event(:resource_process_fail, c.merge({:exit_code=>exit_stat.exitstatus}))
+            fire_event(:instance_fail, c.merge({:exit_code=>exit_stat.exitstatus}))
           else
-            fire_event(:resource_process_exit, c.merge({:exit_code=>exit_stat.exitstatus}))
+            fire_event(:instance_exit, c.merge({:exit_code=>exit_stat.exitstatus}))
           end
         end
       end
