@@ -48,9 +48,10 @@ module Isono
         #  install(agent.agent_id, 'xen-instance-store')
         #}
 
-        subscribe_event(:resource_process_fail, '*') { |data|
+        EventRouter.subscribe("resource_loader/instance_fail", '*') { |data|
+          logger.warn("ResourceInstance unexpectedly shutdown: #{data[:resource_uuid]}")
           DataStore.pass {
-            ri = Models::ResourceInstance.find(:uuid=>data[:message][:resource_uuid])
+            ri = Models::ResourceInstance.find(:uuid=>data[:resource_uuid])
             ri.delete if ri
           }
         }
