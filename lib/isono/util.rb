@@ -2,6 +2,13 @@
 
 require 'digest/sha1'
 require 'hmac-sha1'
+require 'thread'
+require 'stringio'
+
+require 'shellwords'
+unless Shellwords.respond_to? :shellescape
+  require 'ext/shellwords'
+end
 
 module Isono
   module Util
@@ -9,6 +16,90 @@ module Isono
       Digest::SHA1.hexdigest( (str.nil? ? rand.to_s : str) )
     end
     module_function :gen_id
+
+
+    def quote_args(cmd_str, args=[], quote_char='\'')
+      quote_helper =
+        if quote_char
+          proc { |a|
+            [quote_char, Shellwords.shellescape(a), quote_char].join
+          }
+        else
+          proc { |a|
+            Shellwords.shellescape(a)
+          }
+        end
+      sprintf(cmd_str, args.map {|a| quote_helper.call(a) })
+    end
+    module_function :quote_args
+    
+    # system('/bin/ls')
+    # second arg gives 
+    # system('/bin/ls %s', ['/home'])
+    def system(cmd_str, args=[], opts={})
+      unless EventMachine.reactor_running?
+        raise "has to prepare EventMachine context"
+      end
+
+      cmd = quote_args(cmd_str, args, (opts[:quote_char] || '\''))
+
+      capture_io = opts[:io] || StringIO.new
+
+      evmsg = {:cmd => cmd}
+      wait_q = ::Queue.new
+      if opts[:timeout] && opts[:timeout].to_f > 0.0
+        EventMachine.add_timer(opts[:timeout].to_f) {
+          wait_q.enq(RuntimeError.new("timeout child process wait: #{opts[:timeout].to_f} sec(s)"))
+        }
+        evmsg[:timeout] = opts[:timeout].to_f        
+      end
+      popenobj = EventMachine.popen(cmd, EmSystemCb, capture_io, proc { |exit_stat|
+                                      wait_q.enq(exit_stat)
+                                    })
+      pid = EventMachine.get_subprocess_pid(popenobj.signature)
+      evmsg[:pid] = pid
+      EventRouter.emit('subprocess/spawn', nil, evmsg)
+      
+      if self.respond_to? :logger
+        logger.debug("Exec command (pid=#{pid}): #{cmd}")
+      end
+
+      stat = wait_q.deq
+      evmsg = {}
+      
+      case stat
+      when Process::Status
+        evmsg[:exit_code] = stat.exitstatus
+        if stat.exited? && stat.exitstatus == 0
+          EventRouter.emit('subprocess/exit', nil, evmsg)
+        else
+          EventRouter.emit('subprocess/fail', nil, evmsg)
+          raise "Unexpected status from child: #{stat}"
+        end
+      when Exception
+        EventRouter.emit('subprocess/fail', nil, evmsg)
+        raise stat
+      else
+        raise "Unknown signal from child: #{stat}"
+      end
+      
+    end
+    module_function :system
+
+    class EmSystemCb < EventMachine::Connection
+      def initialize(io, exit_cb)
+        @io = io
+        @exit_cb = exit_cb
+      end
+      
+      def receive_data data
+        @io.write(data)
+      end
+      
+      def unbind()
+        @exit_cb.call(get_status)
+      end
+    end
 
   end
 end
