@@ -46,7 +46,7 @@ module Isono
       if sec_builder.is_a? Proc
         sec_name = manager_class.instance_variable_get(:@config_section_name)
         #sec_builder.call(ConfigStructBuilder.new(@config.add_section(sec_name)))
-        ConfigStructBuilder.new(@config.add_section(sec_name), &sec_builder)
+        ConfigStructBuilder.new(@config.add_section(sec_name)).instance_eval &sec_builder
       end
       ns = manager_class.instance_variable_get(:@command_namespace)
       if ns 
@@ -132,10 +132,9 @@ module Isono
 
 
     class ConfigStructBuilder
-      def initialize(config, &blk)
+      def initialize(config)
         @cur_desc=nil
         @config = config
-        self.instance_eval &blk
       end
 
       def add_config(name, default_val=nil)
