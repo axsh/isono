@@ -12,15 +12,14 @@ module Isono
       def on_init(args)
         agent.amq.fanout('heartbeat', {:auto_delete=>true})
         
-        @timer = Util::CheckerTimer.new(config_section.heartbeat_offset_time) {
+        @timer = EventMachine::PeriodicTimer.new(config_section.heartbeat_offset_time.to_f) {
           agent.publish_to('heartbeat', {:agent_id=>agent.agent_id, :boot_token=>agent.boot_token})
         }
-        @timer.start
         agent.publish_to('heartbeat', {:agent_id=>agent.agent_id, :boot_token=>agent.boot_token})
       end
       
       def on_terminate
-        @timer.stop
+        @timer.cancel
       end
     end
   end
