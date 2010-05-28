@@ -32,7 +32,7 @@ module Isono
       sprintf(cmd_str, args.map {|a| quote_helper.call(a) })
     end
     module_function :quote_args
-    
+
     # system('/bin/ls')
     # second arg gives 
     # system('/bin/ls %s', ['/home'])
@@ -44,7 +44,8 @@ module Isono
       cmd = quote_args(cmd_str, args, (opts[:quote_char] || '\''))
 
       capture_io = opts[:io] || StringIO.new
-
+      stdin_buf = opts[:stdin_input]
+      
       evmsg = {:cmd => cmd}
       wait_q = ::Queue.new
       if opts[:timeout] && opts[:timeout].to_f > 0.0
@@ -53,7 +54,7 @@ module Isono
         }
         evmsg[:timeout] = opts[:timeout].to_f        
       end
-      popenobj = EventMachine.popen(cmd, EmSystemCb, capture_io, proc { |exit_stat|
+      popenobj = EventMachine.popen(cmd, EmSystemCb, capture_io, stdin_buf, proc { |exit_stat|
                                       wait_q.enq(exit_stat)
                                     })
       pid = EventMachine.get_subprocess_pid(popenobj.signature)
@@ -87,9 +88,17 @@ module Isono
     module_function :system
 
     class EmSystemCb < EventMachine::Connection
-      def initialize(io, exit_cb)
+      def initialize(io, in_buf, exit_cb)
         @io = io
+        @in_buf = in_buf
         @exit_cb = exit_cb
+      end
+
+      def post_init
+        # send data to stdin for child process
+        if @in_buf
+          send_data @in_buf
+        end
       end
       
       def receive_data data
