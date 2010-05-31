@@ -71,6 +71,10 @@ module Isono
       def manifest
         @manifest
       end
+
+      def config(&blk)
+        Manifest::ConfigStructBuilder.new(@manifest.config).instance_eval &blk
+      end
         
     end
     
@@ -93,6 +97,7 @@ module Isono
     end
 
     attr_reader :resource_root_path, :monitors, :entry_state, :exit_state, :helpers, :load_path
+    attr_reader :config
     attr_accessor :name, :description, :stm, :state_monitor, :instance_data
     
     def initialize(root_path)
@@ -103,6 +108,7 @@ module Isono
       @exit_state  = {}
       @helpers = {}
       @load_path = []
+      @config = Manifest::ConfigStruct.new
 
       append_load_path('lib')
     end
