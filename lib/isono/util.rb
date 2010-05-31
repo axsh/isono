@@ -29,7 +29,7 @@ module Isono
             Shellwords.shellescape(a)
           }
         end
-      sprintf(cmd_str, args.map {|a| quote_helper.call(a) })
+      sprintf(cmd_str, *args.map {|a| quote_helper.call(a) })
     end
     module_function :quote_args
 
