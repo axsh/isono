@@ -84,10 +84,8 @@ module Isono
 
       # instance_data has to be loaded before manifest file
       # evaluation.
-      inst_data_path = File.expand_path('instance_data.yml', root_path)
-      if File.file?(inst_data_path)
-        manifest.instance_data = YAML.load(inst_data_path)
-        manifest.instance_data.freeze
+      if File.file?(manifest.instance_data_path)
+        manifest.instance_data = YAML.load(File.read(manifest.instance_data_path)).freeze
       end
 
       logger.info("Loading resource.manifest: #{path}")
@@ -113,6 +111,10 @@ module Isono
       append_load_path('lib')
     end
 
+    def instance_data_path
+      File.expand_path('instance_data.yml', @resource_root_path)
+    end
+    
     def append_load_path(path)
       real_path = if Pathname.new(path).absolute?
                     path
