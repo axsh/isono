@@ -110,6 +110,15 @@ module Isono
       end
     end
 
+    # return ruby binary path which is expected to be used in
+    # the current environment.
+    def ruby_bin_path
+      #config_section.ruby_bin_path || ENV['_'] =~ /ruby/ ||
+      require 'rbconfig'
+      File.expand_path(Config::CONFIG['RUBY_INSTALL_NAME'], Config::CONFIG['bindir'])
+    end
+    module_function :ruby_bin_path
+
   end
 end
 
