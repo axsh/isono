@@ -133,10 +133,12 @@ module Isono
             EventRouter.emit('mq_command/response_sent', agent.agent_id, msg)
           end
         }
+        EventRouter.emit('mq_command/register', {:namespace=>namespace})
       end
 
       def unregister_namespace(namespace)
         agent.amq.queue(provider_queue_name(namespace), {:exclusive=>true}).delete
+        EventRouter.emit('mq_command/unregister', {:namespace=>namespace})
       end
 
       def provider_queue_name(ns)
