@@ -31,7 +31,7 @@ module Isono
         }
         
         command('uninstall') { |req|
-          ResourceLocator.instance.uninstall(req.args[:resource_uuid])
+          ResourceLocator.instance.uninstall(req.params[:resource_uuid])
         }
       end
       
