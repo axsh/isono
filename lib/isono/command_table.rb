@@ -39,7 +39,6 @@ module Isono
         logger.debug("executing command: #{namespace}/#{key}")
         d[:action].call(req)
       end
-      
     end
     
     class NamespaceBuilder
