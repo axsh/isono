@@ -58,6 +58,14 @@ module Isono
             ri.delete if ri
           }
         }
+
+        EventRouter.subscribe("resource_instance/state_changed", '*') { |data|
+          DataStore.pass {
+            ri = Models::ResourceInstance.find(:uuid=>data[:resource_uuid])
+            ri.status = data[:status]
+            ri.save
+          }
+        }
       end
 
       def on_terminate
