@@ -135,6 +135,10 @@ module Isono
         }
       end
 
+      def unregister_namespace(namespace)
+        agent.amq.queue(provider_queue_name(namespace), {:exclusive=>true}).delete
+      end
+
       def provider_queue_name(ns)
         "command-provider.#{ns}"
       end
