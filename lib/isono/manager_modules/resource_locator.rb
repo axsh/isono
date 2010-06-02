@@ -28,10 +28,12 @@ module Isono
           ResourceLocator.instance.install(req.params[:agent_id],
                                            req.params[:resource_name],
                                            req.params[:instance_data])
+          true
         }
         
         command('uninstall') { |req|
           ResourceLocator.instance.uninstall(req.params[:resource_uuid])
+          true
         }
       end
       
