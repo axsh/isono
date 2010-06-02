@@ -16,7 +16,7 @@ module Isono
       raise "the namespace is already reserved: #{namespace}" if @namespaces.has_key?(namespace)
       
       k = KeyTable.new(namespace, caller_obj)
-      NamespaceBuilder.new(k).instance_eval &blk
+      NamespaceBuilder.new(k).instance_eval &blk if blk
       @namespaces[namespace] = k
       fire_event(:registered, {:namespace=>namespace, :keytable=>k})
     end
