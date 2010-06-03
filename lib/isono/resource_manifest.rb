@@ -185,25 +185,31 @@ module Isono
     end
 
     class TaskBlock
-      def initialize(&blk)
+      include Logger
+      
+      def initialize(blk)
         @blk = blk
       end
 
-      def call(resource_instance)
+      def call(resource_instance, args=[])
+        raise ArgumentError unless resource_instance.is_a?(ManagerModules::ResourceInstance)
         @ri = resource_instance
 
-        instance_eval @blk
+        instance_eval &@blk
       end
       
       private
       def state_monitor
-        @ri.state_monitor
+        manifest.state_monitor
       end
       
       def next_event(ev, *args)
-        @ri.stm.process_event(ev, *args)
+        manifest.stm.process_event(ev, *args)
       end
-      
+
+      def manifest
+        @ri.manifest
+      end
     end
     
     module RakeHelper
