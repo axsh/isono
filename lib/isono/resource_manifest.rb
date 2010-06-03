@@ -189,17 +189,26 @@ module Isono
 
       module TaskMethods
         def rake(task, rakefile=nil, &blk)
-          rake_path = @ri.manifest.helpers[:rake_bin_path] || Gem.bin_path('rake', 'rake')
+          rake_path = manifest.helpers[:rake_bin_path] || Gem.bin_path('rake', 'rake')
           rakefile = if rakefile
                        rakefile
-                     elsif @ri.manifest.helpers[:default_rakefile]
-                       @ri.manifest.helpers[:default_rakefile]
+                     elsif manifest.helpers[:default_rakefile]
+                       manifest.helpers[:default_rakefile]
                      else
                        raise "Rakefile is not specified."
                      end
 
-          logger.debug("#{rake_path} -f #{rakefile} #{task}")
-          system("#{rake_path} -f #{rakefile} #{task}") || raise("failed to run rake")
+          cmd = Util.quote_args("%s -I%s -f %s --rakelib %s RESOURCE_MANIFEST=%s %s",
+                                [rake_path,
+                                 File.join(Isono.home, 'lib'),
+                                 rakefile,
+                                 #File.join(Isono.home, 'tasks/load_resource_manifest.rake'),
+                                 File.join(Isono.home, 'tasks'),
+                                 File.expand_path('resource.manifest', manifest.resource_root_path),
+                                 task
+                                ])
+          logger.debug(cmd)
+          system(cmd)
         end
       end
     end
