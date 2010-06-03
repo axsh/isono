@@ -47,11 +47,13 @@ module Isono
       end
 
       def entry_state(state, &blk)
-        (@manifest.entry_state[state] ||= StateItem.new).instance_eval(&blk)
+       @manifest.entry_state[state] ||= StateItem.new
+       EntryState.new( @manifest.entry_state[state] ).instance_eval(&blk)
       end
       
       def exit_state(state, &blk)
-        (@manifest.exit_state[state] ||= StateItem.new).instance_eval(&blk)
+       @manifest.entry_state[state] ||= StateItem.new
+       ExitState.new( @manifest.entry_state[state] ).instance_eval(&blk)
       end
 
       def plugin(klass)
@@ -75,7 +77,51 @@ module Isono
       def config(&blk)
         Manifest::ConfigStructBuilder.new(@manifest.config).instance_eval &blk
       end
+
+      class EntryState
+        def initialize(stitem)
+          @state_item = stitem
+        end
         
+        def on_event(evname, sender, &blk)
+          @state_item.on_event[evname] = {
+            :evname => evname,
+            :sender => sender,
+            :task => TaskBlock.new(blk)
+          }
+        end
+
+        def on_command(cmd, &blk)
+          @state_item.on_command[cmd] = {:task=> TaskBlock.new(blk)}
+        end
+        
+        def task(&blk)
+          @state_item.task = TaskBlock.new(blk)
+        end
+      end
+
+      class ExitState
+        def initialize(stitem)
+          @state_item = stitem
+        end
+        
+        def on_event(evname, sender, &blk)
+          @state_item.on_event[evname] = {
+            :evname => evname,
+            :sender => sender,
+            :task => TaskBlock.new(blk)
+          }
+        end
+
+        def on_command(cmd, &blk)
+          @state_item.on_command[cmd] = {:task=> TaskBlock.new(blk)}
+        end
+        
+        def task(&blk)
+          @state_item.task = TaskBlock.new(blk)
+        end
+      end
+      
     end
     
     def self.load(path)
@@ -128,22 +174,13 @@ module Isono
     end
     
     class StateItem
+      attr_accessor :task
+      attr_reader :on_event, :on_command
+      
       def initialize()
         @task = nil
         @on_event = {}
-      end
-      
-      def on_event(evname, sender, &blk)
-        @on_event[evname] = {
-          :evname => evname,
-          :sender => sender,
-          :blk => blk
-        }
-        @on_event
-      end
-      
-      def task(&blk)
-        @task = TaskBlock.new(&blk)
+        @on_command = {}
       end
     end
 
