@@ -3,7 +3,7 @@
 require 'isono'
 
 module Isono
-  class CommandClient < Agent
+  class MessagingClient < Agent
 
     def initialize
       m = Manifest.new(Dir.pwd) {
@@ -11,7 +11,7 @@ module Isono
         node_id Util.gen_id
 
         manager ManagerModules::EventChannel
-        manager ManagerModules::MqCommand
+        manager ManagerModules::RpcChannel
       }
       super(m)
     end
@@ -23,12 +23,12 @@ module Isono
     end
 
     def sync_command(namespace, command, args={})
-      ManagerModules::MqCommand.instance.sync_request(namespace, command, args)
+      ManagerModules::RpcChannel.instance.sync_request(namespace, command, args)
     end
 
     def async_command(namespace, command, args={}, &blk)
       EventMachine.schedule {
-        ManagerModules::MqCommand.instance.async_request(namespace, command, args, &blk)
+        ManagerModules::RpcChannel.instance.async_request(namespace, command, args, &blk)
       }
     end
     

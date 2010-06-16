@@ -13,7 +13,7 @@ def create_command_provider
     node_id   :xxx
     
     manager MM::EventChannel
-    manager MM::MqCommand
+    manager MM::RpcChannel
     
   }
   manifest.command.register('test') {
@@ -26,7 +26,7 @@ end
 
 def client_connect(main_cb, pre_cb=nil, post_cb=nil)
   em_fork(proc {
-            c = CommandClient.new
+            c = MessagingClient.new
             pre_cb.call if pre_cb
             c.connect('amqp://localhost/') {
               main_cb.call(c)
@@ -45,7 +45,7 @@ def svr_connect(main_cb, pre_cb=nil, post_cb=nil)
           },post_cb)
 end
 
-describe "MqCommand and CommandClient" do
+describe "RpcChannel and MessagingClient" do
   
   it "creates connection" do
     done = false

@@ -5,7 +5,7 @@ require 'ostruct'
 
 module Isono
   module ManagerModules
-    class MqCommand < Base
+    class RpcChannel < Base
       include Logger
 
       def on_init(args)

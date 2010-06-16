@@ -88,7 +88,7 @@ end
 require 'eventmachine'
 
 EM.run {
-  cc = Isono::CommandClient.new
+  cc = Isono::MessagingClient.new
   cc.connect(common[:amqp_server_uri]) {
 
     case request

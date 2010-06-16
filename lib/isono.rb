@@ -18,7 +18,7 @@ module Isono
   autoload :EventDelegateContext, 'isono/event_delegate_context'
   autoload :ResourceManifest, 'isono/resource_manifest'
   autoload :ManagerHost, 'isono/manager_host'
-  autoload :CommandClient, 'isono/command_client'
+  autoload :MessagingClient, 'isono/messaging_client'
   autoload :CommandTable, 'isono/command_table'
   module ManagerModules
     autoload :Base, 'isono/manager_modules/base'
@@ -30,7 +30,7 @@ module Isono
     autoload :FileReceiverChannel, 'isono/manager_modules/file_receiver_channel'
     autoload :ResourceLocator, 'isono/manager_modules/resource_locator'
     autoload :ResourceLoader, 'isono/manager_modules/resource_loader'
-    autoload :MqCommand, 'isono/manager_modules/mq_command'
+    autoload :RpcChannel, 'isono/manager_modules/rpc_channel'
     autoload :ResourceInstance, 'isono/manager_modules/resource_instance'
     autoload :EventLogger, 'isono/manager_modules/event_logger'
   end
