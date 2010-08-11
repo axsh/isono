@@ -12,7 +12,7 @@ module Isono
         resource_manifest nil
       end
 
-      attr_reader :state_monitor, :monitors
+      attr_reader :manifest
       
       def on_init(args)
         @thread_pool = ThreadPool.new(1, self.class.to_s)
@@ -36,18 +36,6 @@ module Isono
       end
 
       def load
-        @manifest.load_path.each { |path|
-          $LOAD_PATH.unshift path
-        }
-        
-        @manifest.monitors.values.each { |mon|
-          mon.start
-        }
-        
-        if @manifest.state_monitor
-          @state_monitor = @manifest.state_monitor.new
-        end
-        
         edc = EventDelegateContext.new(@manifest.stm)
         # common event handlers
         edc.add_observer(:on_entry_state) { |state, arg|

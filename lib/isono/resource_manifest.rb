@@ -33,19 +33,6 @@ module Isono
         @manifest.name = name
       end
             
-      def state_monitor(monitor_class, &blk)
-        @manifest.state_monitor = self.monitor(monitor_class, &blk)
-      end
-      
-      def monitor(monitor_class, &blk)
-        raise ArgumentError unless monitor_class.is_a?(Class) && monitor_class < Isono::Monitors::Base
-        raise "duplicate registration: #{monitor_class}" if @manifest.monitors.has_key?(monitor_class)
-        
-        m = monitor_class.new()
-        m.instance_eval &blk if blk
-        @manifest.monitors[monitor_class] = m
-      end
-
       def entry_state(state, &blk)
        @manifest.entry_state[state] ||= StateItem.new
        EntryState.new( @manifest.entry_state[state] ).instance_eval(&blk)
@@ -140,14 +127,12 @@ module Isono
       manifest
     end
 
-    attr_reader :resource_root_path, :monitors, :entry_state, :exit_state, :helpers, :load_path
+    attr_reader :resource_root_path, :entry_state, :exit_state, :helpers, :load_path
     attr_reader :config
     attr_accessor :name, :description, :stm, :state_monitor, :instance_data
     
     def initialize(root_path)
       @resource_root_path = root_path
-      @state_monitor = nil
-      @monitors = {}
       @entry_state = {}
       @exit_state  = {}
       @helpers = {}
@@ -254,6 +239,34 @@ module Isono
           system(cmd)
         end
       end
+    end
+
+    module MonitorHelper
+      module ClassMethods
+
+        def state_monitor(monitor_class, &blk)
+          @manifest.config.state_monitor = self.monitor(monitor_class, &blk)
+        end
+        
+        def monitor(monitor_class, &blk)
+          raise ArgumentError unless monitor_class.is_a?(Class) && monitor_class < Isono::Monitors::Base
+          @manifest.config.monitors ||= {}
+          
+          raise "duplicate registration: #{monitor_class}" if @manifest.config.monitors.has_key?(monitor_class)
+          
+          m = monitor_class.new()
+          m.instance_eval &blk if blk
+          @manifest.config.monitors[monitor_class] = m
+        end
+        
+      end
+
+      module TaskMethods
+        def monitor(monitor_class)
+          manifest.config.monitors[monitor_class] || raise("unknown monitor class: #{monitor_class.to_s}")
+        end
+      end
+      
     end
     
   end
