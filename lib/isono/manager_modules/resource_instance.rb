@@ -125,8 +125,6 @@ module Isono
         }
       end
 
-
-
     end
   end
 end
