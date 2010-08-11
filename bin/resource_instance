@@ -44,6 +44,10 @@ manifest = Isono::Manifest.new(resource_dir) {
 manifest.node_id uuid
 manifest.config.resource_instance.resource_manifest = ri_manifest
 
+Signal.trap(:EXIT) {
+  Isono::Agent.stop
+}
+
 EventMachine.epoll
 EventMachine.run {
   Isono::Agent.start(manifest, options)
