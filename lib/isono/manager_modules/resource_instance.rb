@@ -75,7 +75,7 @@ module Isono
       
       private
       def common_args(hash={})
-        {:resource_uuid=>agent.agent_id, :resource_type=>@manifest.name}.merge(hash)
+        {:resource_uuid=>agent.manifest.node_id, :resource_type=>@manifest.name}.merge(hash)
       end
       
       def subscribe_event(evname, sender, &blk)
