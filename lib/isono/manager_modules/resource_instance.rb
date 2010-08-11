@@ -21,6 +21,9 @@ module Isono
         if config_section.resource_manifest.nil?
           raise "resource manifest object is not given. please to check the path for resource.manifest."
         end
+
+        # register the command provider of this RI.
+        agent.manifest.command.register("ri.#{agent.agent_id}")
         
         @manifest = config_section.resource_manifest
         load
@@ -46,6 +49,8 @@ module Isono
           unsubscribe_event_all
           # clear the queued tasks when the state changed.
           @thread_pool.clear
+          # clear the command hook for the current state.
+          agent.manifest.command.namespaces["ri.#{agent.agent_id}"].table.clear
         }
         
         @manifest.entry_state.each { |state, sec|
@@ -58,11 +63,32 @@ module Isono
               }
             }
           end
+
+          unless sec.on_command.empty?
+            edc.add_observer(key) { |args|
+              sec.on_command.each { |k, v|
+                agent.manifest.command.namespaces["ri.#{agent.agent_id}"].table[k] = {
+                  :action=> proc { |req|
+                    v[:task].call(self, [req])
+                    true
+                  }
+                }
+              }
+            }
+          end
         }
+          
         
         @manifest.exit_state.each { |state, sec|
           key = "on_exit_of_#{state}".to_sym
-          edc.add_observer(key, &blk)
+
+          if sec.task
+            edc.add_observer(key) { |args|
+              @thread_pool.pass {
+                sec.task.call(self)
+              }
+            }
+          end
         }
         
         @manifest.stm.process_event(:on_load)
