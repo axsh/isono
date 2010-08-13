@@ -17,7 +17,6 @@ module Isono
   autoload :EventObservable, 'isono/event_observable'
   autoload :EventDelegateContext, 'isono/event_delegate_context'
   autoload :ResourceManifest, 'isono/resource_manifest'
-  autoload :ManagerHost, 'isono/manager_host'
   autoload :MessagingClient, 'isono/messaging_client'
   autoload :CommandTable, 'isono/command_table'
   module ManagerModules
