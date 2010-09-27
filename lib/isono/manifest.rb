@@ -21,52 +21,49 @@ module Isono
       m
     end
 
-    attr_reader :managers, :app_root, :command
+    attr_reader :node_modules, :app_root
     
     # @param [String] app_root Application root folder
     # @param [block]
     def initialize(app_root, &blk)
-      @managers = []
+      @node_modules = []
       resolve_abs_app_root(app_root)
       @config = ConfigStruct.new
       @config.app_root = app_root
 
-      @command = CommandTable.new
       instance_eval(&blk) if blk
       load_config
     end
 
-    # Register manager module class
-    def manager(manager_class, *args)
-      unless manager_class.is_a?(Class) && manager_class < Isono::ManagerModules::Base
+    # Regist a node module class to be initialized/terminated.
+    # @param [Class] mod_class
+    def load_module(mod_class, *args)
+      unless mod_class.is_a?(Class) && mod_class < Isono::NodeModules::Base
         raise ArgumentError, ""
       end
 
-      sec_builder = manager_class.instance_variable_get(:@config_section_builder)
+      sec_builder = mod_class.instance_variable_get(:@config_section_builder)
       if sec_builder.is_a? Proc
-        sec_name = manager_class.instance_variable_get(:@config_section_name)
+        sec_name = mod_class.instance_variable_get(:@config_section_name)
         #sec_builder.call(ConfigStructBuilder.new(@config.add_section(sec_name)))
         ConfigStructBuilder.new(@config.add_section(sec_name)).instance_eval &sec_builder
       end
-      ns = manager_class.instance_variable_get(:@command_namespace)
-      if ns 
-        command.register(ns[:namespace], &ns[:block])
-      end
-      @managers << [manager_class.instance, *args]
+      @node_modules << [mod_class, *args]
     end
+    alias manager load_module
 
     def node_name(name=nil)
       @node_name = name.to_s if name
       @node_name
     end
 
-    def node_id(node_id=nil)
-      @node_id = node_id.to_s if node_id
-      @node_id
+    def node_instance_id(instance_id=nil)
+      @node_instance_id = instance_id.to_s if instance_id
+      @node_instance_id
     end
 
-    def agent_id
-      "#{@node_name}-#{@node_id}"
+    def node_id
+      "#{@node_name}-#{@node_instance_id}"
     end
 
     def config_path(path=nil)

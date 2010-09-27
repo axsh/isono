@@ -3,30 +3,20 @@ require File.expand_path('../spec_helper', __FILE__)
 
 require 'isono'
 
-MM = Isono::ManagerModules
+MM = Isono::NodeModules
 include Isono
 
 
-def create_command_provider
-  manifest = Manifest.new(File.expand_path('../', __FILE__)) {
-    node_name :cmd_provider
-    node_id   :xxx
-    
-    manager MM::EventChannel
-    manager MM::RpcChannel
-    
-  }
-  manifest.command.register('test') {
-    command('test1') { |req|
-      {:code=>1}
-    }
-  }
-  command = Agent.new(manifest)
-end
-
 def client_connect(main_cb, pre_cb=nil, post_cb=nil)
   em_fork(proc {
-            c = MessagingClient.new
+            manifest = Manifest.new(File.expand_path('../', __FILE__)) {
+              node_name :cli
+              node_instance_id   :xxx
+              
+              load_module MM::EventChannel
+              load_module MM::RpcChannel
+            }
+            c = Node.new(manifest)
             pre_cb.call if pre_cb
             c.connect('amqp://localhost/') {
               main_cb.call(c)
@@ -37,7 +27,14 @@ end
 
 def svr_connect(main_cb, pre_cb=nil, post_cb=nil)
   em_fork(proc {
-            c = create_command_provider
+            manifest = Manifest.new(File.expand_path('../', __FILE__)) {
+              node_name :endpoint
+              node_instance_id   :xxx
+              
+              load_module MM::EventChannel
+              load_module MM::RpcChannel
+            }
+            c = Node.new(manifest)
             pre_cb.call if pre_cb
             c.connect('amqp://localhost/') {
               main_cb.call(c)
@@ -45,7 +42,7 @@ def svr_connect(main_cb, pre_cb=nil, post_cb=nil)
           },post_cb)
 end
 
-describe "RpcChannel and MessagingClient" do
+describe "RpcChannel: client and server" do
   
   it "creates connection" do
     done = false
@@ -73,25 +70,23 @@ describe "RpcChannel and MessagingClient" do
     }.should.equal true
   end
   
-  it "send async_command" do
+  it "send async request" do
     svr_connect(proc{|c|
-                  EventRouter.subscribe('mq_command/request_received', '*') { |m|
-                    m[:namespace].should.equal 'test'
-                    m[:command].should.equal 'test1'
-                  }
-                  EventRouter.subscribe('mq_command/response_sent', '*') { |m|
-                    m[:type].should.equal :success
-                    EM.next_tick { EM.stop }
-                  }
+                  rpc = MM::RpcChannel.new(c)
+                  rpc.register_endpoint('endpoint1', MM::RpcChannel::ProcDispatcher.new { |t|
+                                          t.add('kill') { |arg1|
+                                            arg1.should.equal 'arg1'
+                                            
+                                            EM.next_tick { EM.stop }
+                                            {:code=>1}
+                                          }
+                                        })
                 }, proc{
                 })
-
+    sleep 1
     client_connect(proc {|c|
-                     EventRouter.subscribe('mq_command/request_sent', '*') { |m|
-                       m[:state].should.equal :waiting
-                     }
-
-                     req0 = c.async_command('test', 'test1') { |req|
+                     rpc = MM::RpcChannel.new(c)
+                     req0 = rpc.request('endpoint1', 'kill', 'arg1') { |req|
                        req.on_success { |res|
                          req0.ticket.should.equal req.ticket
                          res[:code].should.equal 1
@@ -107,10 +102,11 @@ describe "RpcChannel and MessagingClient" do
   end
 
 
-  it "command timeout" do
+  it "request timeout" do
     client_connect(proc {|c|
-                     c.async_command('test', 'test1') { |req|
-                       req.timeout_sec = 0.1
+                     rpc = MM::RpcChannel.new(c)
+                     rpc.request('test', 'test1') { |req|
+                       req.timeout_sec = 0.2
                        req.on_error { |e|
                          e.should.equal :timeout
                          c.close { EM.stop }

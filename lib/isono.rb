@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-require 'rubygems'
 
 module Isono
   VERSION='0.0.1'
 
-  autoload :Agent, 'isono/agent'
+  autoload :Node, 'isono/node'
   autoload :AmqpClient, 'isono/amqp_client'
   autoload :Daemonize, 'isono/daemonize'
   autoload :Util, 'isono/util'
@@ -18,21 +17,23 @@ module Isono
   autoload :EventDelegateContext, 'isono/event_delegate_context'
   autoload :ResourceManifest, 'isono/resource_manifest'
   autoload :MessagingClient, 'isono/messaging_client'
-  autoload :CommandTable, 'isono/command_table'
   module ManagerModules
     autoload :Base, 'isono/manager_modules/base'
-    autoload :AgentHeartbeat, 'isono/manager_modules/agent_heartbeat'
-    autoload :AgentCollector, 'isono/manager_modules/agent_collector'
-    autoload :DataStore, 'isono/manager_modules/data_store'
-    autoload :EventChannel, 'isono/manager_modules/event_channel'
     autoload :FileSenderChannel, 'isono/manager_modules/file_sender_channel'
     autoload :FileReceiverChannel, 'isono/manager_modules/file_receiver_channel'
     autoload :ResourceLocator, 'isono/manager_modules/resource_locator'
     autoload :ResourceLoader, 'isono/manager_modules/resource_loader'
-    autoload :RpcChannel, 'isono/manager_modules/rpc_channel'
     autoload :ResourceInstance, 'isono/manager_modules/resource_instance'
-    autoload :EventLogger, 'isono/manager_modules/event_logger'
   end
+  module NodeModules
+    autoload :Base, 'isono/node_modules/base'
+    autoload :DataStore, 'isono/node_modules/data_store'
+    autoload :EventChannel, 'isono/node_modules/event_channel'
+    autoload :RpcChannel, 'isono/node_modules/rpc_channel'
+    autoload :NodeHeartbeat, 'isono/node_modules/node_heartbeat'
+    autoload :NodeCollector, 'isono/node_modules/node_collector'
+    autoload :EventLogger, 'isono/node_modules/event_logger'
+  end  
   module Runner
     autoload :Agent, 'isono/runner/agent'
   end

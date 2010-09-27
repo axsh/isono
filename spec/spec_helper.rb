@@ -7,7 +7,7 @@ require 'bacon'
 #require 'spec'
 require 'isono'
 
-class AmqpStub < Isono::Agent
+class AmqpStub < Isono::Node
   include Isono::Logger
 
 
