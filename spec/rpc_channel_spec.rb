@@ -119,4 +119,43 @@ describe "RpcChannel: client and server" do
     }.should.equal true
   end
 
+
+  it "decorated dispatcher" do
+    svr_connect(proc{|c|
+                  rpc = MM::RpcChannel.new(c)
+                  endpoint1 = MM::RpcChannel::ProcDispatcher.new { |t|
+                    t.add('kill') {
+                      EM.next_tick { EM.stop }
+                    }
+                    t.add('func1') {
+                      arg1.should.equal 'arg1'
+                      sleep 2
+                      {:code=>1}
+                    }
+                  }
+
+                  rpc.register_endpoint('endpoint1', MM::RpcChannel::SyncDispatcher.new(endpoint1))
+                }, proc{
+                })
+    sleep 1
+    client_connect(proc {|c|
+                     rpc = MM::RpcChannel.new(c)
+                     10.times {
+                       req0 = rpc.request('endpoint1', 'func1', 'arg1') { |req|
+                         req.on_success { |res|
+                           req0.ticket.should.equal req.ticket
+                           req0.complete_status.should.equal :success
+                           ((req0.completed_at - req0.sent_at) > 1.5).should.be.true
+                           res[:code].should.equal 1
+                         }
+                       }
+                     }
+                   },proc {
+                   })
+    
+    Process.waitall.all? { |s|
+      s[1].exitstatus == 0
+    }.should.equal true
+  end
+  
 end
