@@ -132,6 +132,10 @@ module Isono
         def config_section
           manifest.config.send(@_tmp[:modclass].instance_variable_get(:@config_section_name))
         end
+
+        def logger
+          @_tmp[:modclass].logger
+        end
       end
 
       def initialize(node, modclass)
