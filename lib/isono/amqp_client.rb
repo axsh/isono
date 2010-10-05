@@ -80,10 +80,13 @@ module Isono
       }
       @amqp_client.callback {
         on_connect
-        blk.call if blk
+        if blk
+          blk.arity == 1 ? blk.call(:success) : blk.call
+        end            
       }
       @amqp_client.errback {
         logger.error("Failed to connect to the broker: #{amqp_server_uri}")
+        blk.call(:error) if blk && blk.arity == 1
       }
       # Note: Thread.current[:mq] is utilized in amqp gem.
       Thread.current[:mq] = ::MQ.new(@amqp_client)
