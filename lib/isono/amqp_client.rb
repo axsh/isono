@@ -99,7 +99,7 @@ module Isono
     end
 
     def amq
-      raise 'AMQP connection is not established yet' unless connected? # Thread.current[:mq].nil?
+      raise 'AMQP connection is not established yet' unless connected?
       Thread.current[:mq]
     end
 
