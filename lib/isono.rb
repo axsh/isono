@@ -33,9 +33,11 @@ module Isono
     autoload :NodeHeartbeat, 'isono/node_modules/node_heartbeat'
     autoload :NodeCollector, 'isono/node_modules/node_collector'
     autoload :EventLogger, 'isono/node_modules/event_logger'
+    autoload :JobWorker, 'isono/node_modules/job_worker'
   end  
   module Runner
     autoload :Agent, 'isono/runner/agent'
+    autoload :RpcServer, 'isono/runner/rpc_server'
   end
 
   module Models
