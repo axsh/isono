@@ -42,6 +42,8 @@ module Isono
         raise ArgumentError, ""
       end
 
+      return if @node_modules.find{|i| i[0] == mod_class }
+
       sec_builder = mod_class.instance_variable_get(:@config_section_builder)
       if sec_builder.is_a? Proc
         sec_name = mod_class.instance_variable_get(:@config_section_name)
