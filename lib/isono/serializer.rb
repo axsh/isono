@@ -3,7 +3,7 @@ module Isono
   # AMQP message serializer
   class Serializer
     def self.instance
-      YamlSerializer.new
+      @serializer ||= RubySerializer.new
     end
 
     def marshal(buf)
@@ -27,6 +27,17 @@ module Isono
 
     def unmarshal(buf)
       YAML.load(buf)
+    end
+  end
+
+  class RubySerializer < Serializer
+    
+    def marshal(buf)
+      ::Marshal.dump(buf)
+    end
+
+    def unmarshal(buf)
+      ::Marshal.load(buf)
     end
   end
 end
