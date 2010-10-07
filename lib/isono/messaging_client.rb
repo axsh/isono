@@ -51,7 +51,6 @@ module Isono
         }
       end
     end
-
     
     def initialize(m=nil, &blk)
       m ||= Manifest.new(Dir.pwd) {
@@ -90,7 +89,6 @@ module Isono
       end
 
       def normal_request(m, *args)
-        q = ::Queue.new
         req = @rpc.sync_request(@endpoint, m, *args)
 
         req.wait
