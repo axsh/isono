@@ -102,7 +102,7 @@ module Isono
 
     def sync_request(endpoint, key, args)
       rpc = NodeModules::RpcChannel.new(self)
-      rpc.sync_request(endpoint, key, args)
+      rpc.sync_request(endpoint, key, args).wait
     end
 
   end
