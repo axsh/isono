@@ -59,8 +59,6 @@ module Isono
                                     })
       pid = EventMachine.get_subprocess_pid(popenobj.signature)
       evmsg[:pid] = pid
-      EventRouter.emit('subprocess/spawn', nil, evmsg)
-      
       if self.respond_to? :logger
         logger.debug("Exec command (pid=#{pid}): #{cmd}")
       end
@@ -72,13 +70,10 @@ module Isono
       when Process::Status
         evmsg[:exit_code] = stat.exitstatus
         if stat.exited? && stat.exitstatus == 0
-          EventRouter.emit('subprocess/exit', nil, evmsg)
         else
-          EventRouter.emit('subprocess/fail', nil, evmsg)
           raise "Unexpected status from child: #{stat}"
         end
       when Exception
-        EventRouter.emit('subprocess/fail', nil, evmsg)
         raise stat
       else
         raise "Unknown signal from child: #{stat}"
