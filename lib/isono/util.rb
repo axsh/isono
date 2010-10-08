@@ -12,6 +12,25 @@ end
 
 module Isono
   module Util
+    
+    ##
+    # Convert to snake case.
+    #
+    #   "FooBar".snake_case           #=> "foo_bar"
+    #   "HeadlineCNNNews".snake_case  #=> "headline_cnn_news"
+    #   "CNN".snake_case              #=> "cnn"
+    #
+    # @return [String] Receiver converted to snake case.
+    #
+    # @api public
+    def snake_case(str)
+      return str.downcase if str.match(/\A[A-Z]+\z/)
+      str.gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2').
+        gsub(/([a-z])([A-Z])/, '\1_\2').
+        downcase
+    end
+    module_function :snake_case
+    
     def gen_id(str=nil)
       Digest::SHA1.hexdigest( (str.nil? ? rand.to_s : str) )
     end
