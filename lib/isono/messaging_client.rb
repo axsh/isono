@@ -18,8 +18,8 @@ module Isono
   class MessagingClient < Node
     include Logger
 
-    def self.start(amqp_uri, manifest=nil)
-      node = self.new(manifest)
+    def self.start(amqp_uri, manifest=nil, &blk)
+      node = self.new(manifest, &blk)
 
       if EventMachine.reactor_thread?
         EventMachine.schedule {
@@ -100,7 +100,7 @@ module Isono
       RpcSyncDelegator.new(rpc, endpoint, opts)
     end
 
-    def sync_request(endpoint, key, args)
+    def sync_request(endpoint, key, *args)
       rpc = NodeModules::RpcChannel.new(self)
       rpc.sync_request(endpoint, key, args).wait
     end
