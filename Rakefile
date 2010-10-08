@@ -13,7 +13,7 @@ task :gem do
     s.summary = ""
     s.name = 'isono'
     s.require_path = 'lib'
-    s.required_ruby_version = '>= 1.8.6'
+    s.required_ruby_version = '>= 1.8.7'
     
     s.files = Dir['{bin/*,lib/**/*.rb}'] +
       %w(isono.gemspec)
@@ -24,6 +24,7 @@ task :gem do
     s.add_dependency "amqp", ">= 0.6.7"
     s.add_dependency "eventmachine", ">= 0.12.10"
     s.add_dependency "statemachine", ">= 1.0.0"
+    s.add_dependency "log4r"
 
     s.add_development_dependency 'bacon'
     s.add_development_dependency 'rake'
