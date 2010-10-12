@@ -31,6 +31,15 @@ module Isono
     autoload :Agent, 'isono/runner/agent'
     autoload :RpcServer, 'isono/runner/rpc_server'
   end
+  module Rack
+    require 'isono/rack'
+    autoload :Builder, 'isono/rack/builder'
+    autoload :ObjectMethod, 'isono/rack/object_method'
+    autoload :Proc, 'isono/rack/proc'
+    autoload :ThreadPass, 'isono/rack/thread_pass'
+    autoload :Job, 'isono/rack/job'
+    autoload :DataStore, 'isono/rack/data_store'
+  end
 
   module Models
     autoload :AgentPool, 'isono/models/agent_pool'
