@@ -26,6 +26,7 @@ module Isono
     autoload :NodeCollector, 'isono/node_modules/node_collector'
     autoload :EventLogger, 'isono/node_modules/event_logger'
     autoload :JobWorker, 'isono/node_modules/job_worker'
+    autoload :JobChannel, 'isono/node_modules/job_channel'
   end  
   module Runner
     autoload :Agent, 'isono/runner/agent'

@@ -4,6 +4,15 @@ module Isono
 module Rack
   class Job < Decorator
     include Logger
+
+    class NullResponse < NodeModules::RpcChannel::ResponseContext
+      def progress(ret)
+      end
+
+      def response(ret)
+      end
+    end
+
     
     def initialize(app, job_worker)
       super(app)
@@ -11,15 +20,29 @@ module Rack
     end
     
     def call(req, res)
-      job = @job_worker.run(){
+      orig_res = res
+      case req.r[:job_request_type]
+      when :submit
+        res = NullResponse.new(res.node, res.header)
+      end
+      
+      job = @job_worker.run(req.r[:parent_job_id]){
         begin
           app.call(req, res)
           
           res.response(1) unless res.responded?
-        ensure
+        rescue Exception => e
+          logger.error(e)
+          res.response(e)
         end
       }
-      res.progress({:job_id=>job.job_id})
+
+      case req.r[:job_request_type]
+      when :submit
+        orig_res.response(job.to_hash)
+      else
+        res.progress(job.to_hash)
+      end
     end
   end
 end

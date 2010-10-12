@@ -59,6 +59,7 @@ module Isono
 
         load_module NodeModules::EventChannel
         load_module NodeModules::RpcChannel
+        load_module NodeModules::JobChannel
       }
       m.instance_eval(&blk) if blk
       super(m)
@@ -101,6 +102,10 @@ module Isono
     def request(endpoint, key, *args, &blk)
       rpc = NodeModules::RpcChannel.new(self)
       rpc.request(endpoint, key, *args, &blk)
+    end
+
+    def submit(job_endpoint, key, *args)
+      NodeModules::JobChannel.new(self).submit(job_endpoint, key, *args)
     end
 
   end
