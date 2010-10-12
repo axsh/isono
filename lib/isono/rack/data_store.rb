@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Isono::Rack
+module Isono
+module Rack
   # Runs app.call() in the thread context of DataStore's worker.
   class DataStore < Decorator
     def call(req, res)
@@ -9,4 +10,5 @@ module Isono::Rack
       }
     end
   end
+end
 end

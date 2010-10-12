@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Isono::Rack
+module Isono
+module Rack
   class ThreadPass < Decorator
     include Logger
     
@@ -16,5 +17,6 @@ module Isono::Rack
         end
       }
     end
-  end      
+  end
+end
 end

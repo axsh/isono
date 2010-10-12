@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Isono::Rack
+module Isono
+module Rack
   class Job < Decorator
     include Logger
     
@@ -21,4 +22,5 @@ module Isono::Rack
       res.progress({:job_id=>job.job_id})
     end
   end
+end
 end

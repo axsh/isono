@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Isono::Rack
+module Isono
+module Rack
   class Proc
     include Logger
 
@@ -59,4 +60,5 @@ module Isono::Rack
       Thread.current["#{self.class.to_s}/response"]
     end
   end
+end
 end

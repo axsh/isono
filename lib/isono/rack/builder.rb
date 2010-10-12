@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Isono::Rack
+module Isono
+module Rack
   class Builder
     def initialize
       @filters = []
@@ -20,4 +21,5 @@ module Isono::Rack
       @filters.reverse.inject(@app) {|d, f| f.call(d) }.call(req, res)
     end
   end
+end
 end

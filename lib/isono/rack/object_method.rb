@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Isono::RpcDispatcher
+module Isono
+module Rack
   class ObjectMethod
     include Logger
     
@@ -28,4 +29,5 @@ module Isono::RpcDispatcher
     end
     
   end
+end
 end
