@@ -6,8 +6,8 @@ require 'eventmachine'
 module Isono
   # @example Sync RPC call with object method. 
   # mc = MessagingClient.start
-  # puts mc.sync_request('endpoint', 'func1', xxxx, xxxx)
-  # puts mc.sync_request('endpoint', 'func2', xxx, xxx)
+  # puts mc.request('endpoint', 'func1', xxxx, xxxx)
+  # puts mc.request('endpoint', 'func2', xxx, xxx)
   #
   # @example Sync RPC call using delegated object
   # mc = MessagingClient.start
@@ -89,9 +89,7 @@ module Isono
       end
 
       def normal_request(m, *args)
-        req = @rpc.sync_request(@endpoint, m, *args)
-
-        req.wait
+        @rpc.request(@endpoint, m, *args)
       end
     end
     
@@ -100,9 +98,9 @@ module Isono
       RpcSyncDelegator.new(rpc, endpoint, opts)
     end
 
-    def sync_request(endpoint, key, *args)
+    def request(endpoint, key, *args, &blk)
       rpc = NodeModules::RpcChannel.new(self)
-      rpc.sync_request(endpoint, key, args).wait
+      rpc.request(endpoint, key, *args, &blk)
     end
 
   end
