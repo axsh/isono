@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Isono::Rack
-  class Builder < Dispatcher
-    def initailize
-      @filsters = []
+  class Builder
+    def initialize
+      @filters = []
     end
     
     def use(decorator_class, *args)
