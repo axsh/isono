@@ -27,6 +27,8 @@ module Isono::Rack
   end
 
   class Request
+    attr_reader :r
+    
     def initialize(request_hash)
       @r = request_hash
     end
