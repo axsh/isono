@@ -18,7 +18,7 @@ module Rack
     end
     
     def command(key, &blk)
-      @table[key] = blk
+      @table[key.to_s] = blk
       self
     end
 
@@ -28,7 +28,7 @@ module Rack
     end
 
     def call(req, res)
-      d = @table[req.command] || @table['']
+      d = @table[req.command.to_s] || @table['']
       if d
         if @opts[:extract_args]
           res.response(d.call(*req.args))
