@@ -12,7 +12,7 @@ module Isono::Rack
     def call(req, res)
       job = @job_worker.run(){
         begin
-          app.call(res, req)
+          app.call(req, res)
           
           res.response(1) unless res.responded?
         ensure
