@@ -36,7 +36,21 @@ module Isono
     end
     module_function :gen_id
 
-
+    # Return the IP address assigned to default gw interface
+    def default_gw_ipaddr
+      ip = case RUBY_PLATFORM
+           when /-linux$/
+             `/sbin/ip route get 8.8.8.8`.split("\n")[0].split.last
+           when /-solaris$/
+             `/sbin/ifconfig $(route get 1.1.1.1  | awk '$1 == "interface:" {print $2}') | awk '$1 == "inet" { print $2 }'`
+           else
+             raise "Unsupported platform to detect gateway IP address: #{RUBY_PLATFORM}"
+           end
+      raise "Failed to run command lines or empty result" if ip == '' || $?.exitstatus != 0
+      ip
+    end
+    module_function :default_gw_ipaddr
+    
     def quote_args(cmd_str, args=[], quote_char='\'')
       quote_helper =
         if quote_char
