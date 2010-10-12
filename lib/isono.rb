@@ -17,14 +17,6 @@ module Isono
   autoload :EventDelegateContext, 'isono/event_delegate_context'
   autoload :ResourceManifest, 'isono/resource_manifest'
   autoload :MessagingClient, 'isono/messaging_client'
-  module ManagerModules
-    autoload :Base, 'isono/manager_modules/base'
-    autoload :FileSenderChannel, 'isono/manager_modules/file_sender_channel'
-    autoload :FileReceiverChannel, 'isono/manager_modules/file_receiver_channel'
-    autoload :ResourceLocator, 'isono/manager_modules/resource_locator'
-    autoload :ResourceLoader, 'isono/manager_modules/resource_loader'
-    autoload :ResourceInstance, 'isono/manager_modules/resource_instance'
-  end
   module NodeModules
     autoload :Base, 'isono/node_modules/base'
     autoload :DataStore, 'isono/node_modules/data_store'
