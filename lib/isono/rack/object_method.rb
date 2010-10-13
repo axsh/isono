@@ -5,7 +5,7 @@ module Rack
   class ObjectMethod
     include Logger
     
-    def initialize
+    def initialize(obj)
       @obj = obj
     end
     
