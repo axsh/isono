@@ -47,13 +47,15 @@ module Isono
           end
 
           def build(endpoint, node)
+            helper_context = self.new
+            
             app_builder = lambda { |builders|
               unless builders.empty?
-                proc_app = Rack::Proc.new()
+                map_app = Rack::Map.new
                 builders.each { |b|
-                  b.call(proc_app)
+                  b.call(map_app, helper_context)
                 }
-                proc_app
+                map_app
               end
             }
 
@@ -77,8 +79,8 @@ module Isono
           
           protected
           def add(type, command, &blk)
-            @builders[type] << lambda { |rack_proc|
-              rack_proc.command(command, &blk)
+            @builders[type] << lambda { |rack_map, ctx|
+              rack_map.map(command, Rack::Proc.new(ctx, &blk))
             }
           end
         end
