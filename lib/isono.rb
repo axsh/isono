@@ -40,6 +40,7 @@ module Isono
     autoload :ThreadPass, 'isono/rack/thread_pass'
     autoload :Job, 'isono/rack/job'
     autoload :DataStore, 'isono/rack/data_store'
+    autoload :Map, 'isono/rack/map'
   end
 
   module Models

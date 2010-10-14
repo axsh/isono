@@ -5,60 +5,45 @@ module Rack
   class Proc
     include Logger
 
-    def self.build(opts={}, &blk)
-      n = self.new(opts)
-      blk.call(n)
-      n
+    THREAD_LOCAL_KEY=self.to_s
+    
+    attr_accessor :context
+    
+    def initialize(context=nil, opts={}, &blk)
+      @context = context || Object.new
+      @blk = blk
     end
     
-    def initialize(opts={}, &blk)
-      @table = {}
-      @opts = {:extract_args=>false}.merge(opts)
-      default(&blk) if blk
-    end
-    
-    def command(key, &blk)
-      @table[key.to_s] = blk
-      self
-    end
-
-    def default(&blk)
-      @table[''] = blk
-      self
-    end
-
     def call(req, res)
-      d = @table[req.command.to_s] || @table['']
-      if d
-        if @opts[:extract_args]
-          res.response(d.call(*req.args))
-        else
-          Thread.current["#{self.class.to_s}/request"] = req
-          Thread.current["#{self.class.to_s}/response"] = res
-          begin
-            # handle response in the block
-            instance_eval(&d)
-            # send empty message back to client if the response is not handled in block.
-            res.response(nil) unless res.responded?
-          ensure
-            Thread.current["#{self.class.to_s}/request"] = nil
-            Thread.current["#{self.class.to_s}/response"] = nil
-          end
-        end
-      else
-        raise UnknownMethodError, "#{req.command}"
+      dup.__send__(:_call, req, res)
+    end
+
+    private
+    def _call(req, res)
+      Thread.current["#{THREAD_LOCAL_KEY}/request"] = req
+      Thread.current["#{THREAD_LOCAL_KEY}/response"] = res
+      begin
+        # handle response in the block
+        @context.extend InjectMethods
+        @context.instance_eval(&@blk)
+        # send empty message back to client if the response is not handled in block.
+        res.response(nil) unless res.responded?
+      ensure
+        Thread.current["#{THREAD_LOCAL_KEY}/request"] = nil
+        Thread.current["#{THREAD_LOCAL_KEY}/response"] = nil
       end
-        
     end
 
-    protected
-    def request
-      Thread.current["#{self.class.to_s}/request"]
+    module InjectMethods
+      def request
+        Thread.current["#{THREAD_LOCAL_KEY}/request"]
+      end
+      
+      def response
+        Thread.current["#{THREAD_LOCAL_KEY}/response"]
+      end
     end
-
-    def response
-      Thread.current["#{self.class.to_s}/response"]
-    end
+    
   end
 end
 end

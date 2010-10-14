@@ -73,14 +73,14 @@ describe "RpcChannel: client and server" do
   it "send async request" do
     svr_connect(proc{|c|
                   rpc = MM::RpcChannel.new(c)
-                  rpc.register_endpoint('endpoint1', Rack::Proc.build(:extract_args=>true) { |t|
-                                          t.command('kill') { |arg1, arg2, arg3|
-                                            arg1.should.equal 'arg1'
-                                            arg2.should.equal 'arg2'
-                                            arg3.should.equal 'arg3'
+                  rpc.register_endpoint('endpoint1', Isono::Rack::Map.build { |t|
+                                          t.map('kill') {
+                                            request.args[0].should.equal 'arg1'
+                                            request.args[1].should.equal 'arg2'
+                                            request.args[2].should.equal 'arg3'
                                             
                                             EM.next_tick { EM.stop }
-                                            {:code=>1}
+                                            response.response({:code=>1})
                                           }
                                         })
                 }, proc{
@@ -125,18 +125,18 @@ describe "RpcChannel: client and server" do
   it "decorated dispatcher" do
     svr_connect(proc{|c|
                   rpc = MM::RpcChannel.new(c)
-                  endpoint1 = Rack::Proc.build(:extract_args=>true) { |t|
-                    t.command('kill') {
+                  endpoint1 = Isono::Rack::Map.build { |t|
+                    t.map('kill') {
                       EM.add_timer(0.5) { EM.stop }
                     }
-                    t.command('func1') { |arg1|
-                      arg1.should.equal 'arg1'
+                    t.map('func1') {
+                      request.args[0].should.equal 'arg1'
                       sleep 2
-                      {:code=>1}
+                      response.response({:code=>1})
                     }
                   }
 
-                  rpc.register_endpoint('endpoint1', Rack::ThreadPass.new(endpoint1))
+                  rpc.register_endpoint('endpoint1', Isono::Rack::ThreadPass.new(endpoint1))
                 }, proc{
                 })
     sleep 1
