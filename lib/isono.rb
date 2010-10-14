@@ -27,6 +27,7 @@ module Isono
     autoload :EventLogger, 'isono/node_modules/event_logger'
     autoload :JobWorker, 'isono/node_modules/job_worker'
     autoload :JobChannel, 'isono/node_modules/job_channel'
+    autoload :JobCollector, 'isono/node_modules/job_collector'
   end  
   module Runner
     autoload :Agent, 'isono/runner/agent'
@@ -47,6 +48,7 @@ module Isono
     autoload :AgentPool, 'isono/models/agent_pool'
     autoload :ResourceInstance, 'isono/models/resource_instance'
     autoload :EventLog, 'isono/models/event_log'
+    autoload :JobState, 'isono/models/job_state'
   end
   module Monitors
     autoload :Base, 'isono/monitors/base'

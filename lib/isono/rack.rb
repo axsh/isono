@@ -36,6 +36,8 @@ module Isono::Rack
     def command() @r[:command]; end
     alias :key :command
     def args() @r[:args]; end
+    def sender() @r[:sender]; end
+    def message_id() @r[:message_id]; end
   end
   
 end
