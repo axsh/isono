@@ -45,7 +45,7 @@ module Isono
   end
 
   module Models
-    autoload :AgentPool, 'isono/models/agent_pool'
+    autoload :NodeState, 'isono/models/node_state'
     autoload :ResourceInstance, 'isono/models/resource_instance'
     autoload :EventLog, 'isono/models/event_log'
     autoload :JobState, 'isono/models/job_state'
