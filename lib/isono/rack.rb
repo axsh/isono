@@ -7,7 +7,7 @@ module Isono::Rack
   
   class << self
     def build(&blk)
-      Builder.new.instance_eval &blk
+      Builder.new(&blk)
     end
   end
   
