@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Isono::Rack
+module Isono
+module Rack
   class RpcError < RuntimeError; end
   class UnknownMethodError < RpcError; end
   class ResponseIncompleteError < RpcError; end
@@ -39,5 +40,28 @@ module Isono::Rack
     def sender() @r[:sender]; end
     def message_id() @r[:message_id]; end
   end
-  
+
+  class Response
+    attr_reader :ctx
+    
+    # @param [NodeModules::RpcChannel::ResponseContext] ctx
+    def initialize(ctx)
+      raise TypeError unless ctx.is_a?(NodeModules::RpcChannel::ResponseContext)
+      @ctx = ctx
+    end
+
+    def responded?
+      @ctx.responded?
+    end
+
+    def progress(msg)
+      @ctx.progress(msg)
+    end
+
+    def response(msg)
+      @ctx.response(msg)
+    end
+    
+  end
+end  
 end

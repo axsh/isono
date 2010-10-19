@@ -38,8 +38,34 @@ module Isono
 
       class EndpointBuilder
         module BuildMethods
-          def job(command, &blk)
-            add(:job, command, &blk)
+          # @exmaple
+          # job 'command1', proc {
+          #     # do somthing.
+          #   }, proc {
+          #     # do somthing on job failure.
+          #   }
+          # @example
+          # job 'command1' do
+          #   response.fail_cb {
+          #     # do somthing on job failure.
+          #   }
+          #   sleep 10
+          # end
+          def job(command, run_cb=nil, fail_cb=nil, &blk)
+            app = if run_cb.is_a?(Proc)
+                    proc {
+                      request.fail_cb do
+                        self.instance_eval(&fail_cb)
+                      end
+
+                      self.instance_eval(&run_cb)
+                    }
+                  elsif blk
+                    blk
+                  else
+                    raise ArgumentError, "callbacks were not set propery"
+                  end
+            add(:job, command, &app)
           end
 
           def rpc(command, &blk)
@@ -47,7 +73,7 @@ module Isono
           end
 
           def build(endpoint, node)
-            helper_context = self.new
+            helper_context = self.new(node)
             
             app_builder = lambda { |builders|
               unless builders.empty?
@@ -90,6 +116,10 @@ module Isono
             @builders = {:job=>[], :rpc=>[]}
             extend BuildMethods
           }
+        end
+
+        def initialize(node)
+          @node = node
         end
       end
       
