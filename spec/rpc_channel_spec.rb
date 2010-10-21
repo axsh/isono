@@ -167,6 +167,40 @@ describe "RpcChannel: client and server" do
     Process.waitall.all? { |s|
       s[1].exitstatus == 0
     }.should.equal true
+
+    sleep 2
+  end
+
+  it "catch remote exception" do
+    svr_connect(proc{|c|
+                  rpc = MM::RpcChannel.new(c)
+                  rpc.register_endpoint('endpoint1', Isono::Rack::Map.build { |t|
+                                          t.map('kill') {
+                                            p Thread.current == EM.reactor_thread
+                                            EM.next_tick { EM.stop }
+                                            raise StandardError, "message"
+                                            response.response({:code=>1})
+                                          }
+                                        })
+                }, proc{
+                })
+    sleep 1
+
+    Process.fork {
+      Thread.new { EM.run }
+      m = MessagingClient.start('amqp://localhost/')
+      begin
+        m.request('endpoint1', 'kill', 'arg1', "arg2", "arg3")
+        false.should.equal true
+      rescue MM::RpcChannel::RpcError => e
+        puts "come rescue error"
+        true.should.equal true
+      end
+    }
+    
+    Process.waitall.all? { |s|
+      s[1].exitstatus == 0
+    }.should.equal true
   end
   
 end
