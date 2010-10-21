@@ -174,7 +174,7 @@ module Isono
           if @options[:node_id]
             manifest.node_instance_id(@options[:node_id])
           elsif manifest.node_instance_id.nil?
-            manifest.node_instance_id(default_node_id)
+            abort("[ERROR]: manifest.node_istance_id is not set")
           end
           
           EventMachine.epoll
@@ -191,11 +191,6 @@ module Isono
           builder.build(endpoint, @node)
         end
         
-        private
-        def default_node_id
-          # use the ip address for the default routeas key value
-          Digest::SHA1.hexdigest(`/sbin/ip route get 8.8.8.8`.split("\n")[0].split.last)[0, 10]
-        end
       end
       
     end
