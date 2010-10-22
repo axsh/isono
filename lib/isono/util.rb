@@ -40,14 +40,15 @@ module Isono
 
     # Return the IP address assigned to default gw interface
     def default_gw_ipaddr
-      ip = case RUBY_PLATFORM
-           when /-linux$/
+      ip = case `/bin/uname -s`.rstrip
+           when 'Linux'
              `/sbin/ip route get 8.8.8.8`.split("\n")[0].split.last
-           when /-solaris$/
+           when 'SunOS'
              `/sbin/ifconfig $(route get 1.1.1.1  | awk '$1 == "interface:" {print $2}') | awk '$1 == "inet" { print $2 }'`
            else
-             raise "Unsupported platform to detect gateway IP address: #{RUBY_PLATFORM}"
+             raise "Unsupported platform to detect gateway IP address: #{`/bin/uname`}"
            end
+      ip = ip.rstrip
       raise "Failed to run command lines or empty result" if ip == '' || $?.exitstatus != 0
       ip
     end
