@@ -51,9 +51,13 @@ module Rack
       end
       
       job = @job_worker.run(req.r[:parent_job_id]){
-        @app.call(JobRequest.new(req.r, job), JobResponse.new(res.ctx, job))
-          
-        res.response(nil) unless res.responded?
+        begin
+          @app.call(JobRequest.new(req.r, job), JobResponse.new(res.ctx, job))
+          res.response(nil) unless res.responded?
+        rescue Exception => e
+          res.response(e)
+          raise e
+        end
       }
 
       case req.r[:job_request_type]
