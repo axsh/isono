@@ -10,6 +10,8 @@ unless Shellwords.respond_to? :shellescape
   require 'ext/shellwords'
 end
 
+require 'eventmachine'
+
 module Isono
   module Util
     
