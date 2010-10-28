@@ -109,7 +109,7 @@ module Isono
     end
 
     def event_publish(evname, opts={})
-      NodeModules::EventChannel.new(self).publish(evname, opts={})
+      NodeModules::EventChannel.new(self).publish(evname, opts)
     end
 
   end
