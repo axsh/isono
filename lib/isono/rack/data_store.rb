@@ -6,7 +6,13 @@ module Rack
   class DataStore < Decorator
     def call(req, res)
       NodeModules::DataStore.pass {
-        @app.call(req, res)
+        begin
+          ret = @app.call(req, res)
+          res.response(ret) unless res.responded?
+        rescue ::Exception => e
+          res.response(e)
+          raise e
+        end
       }
     end
   end
