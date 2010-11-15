@@ -150,6 +150,63 @@ module Isono
     end
     module_function :ruby_bin_path
 
+    # A utility class to interact success/error message with two different threads.
+    # dm = DeferedMsg.new
+    # EM.schedule {
+    #   if condition
+    #     dm.success
+    #   else
+    #     dm.error(RuntimeError.new("fail"))
+    #   end
+    #
+    #   dm.wait rescue abort("got failure")
+    # }
+    # # will raise RuntimeError in case of error().
+    # dm.wait unless EM.reactor_thread?
+    #
+    class DeferedMsg < ::Queue
+      class TimeoutError < StandardError; end
+      
+      def initialize(timeout=60*15, th=Thread.current)
+        super()
+        @thread_wait = th
+        @timer_sig = EventMachine.add_timer(timeout) {
+          error(TimeoutError.new)
+        }
+      end
+      
+      def success(returnval=true)
+        self.enq(returnval)
+        @thread_called = Thread.current
+      end
+
+
+      def error(ex)
+        raise TypeError unless ex.is_a?(Exception)
+        self.enq(ex)
+        @thread_called = Thread.current
+      end
+
+      def wait
+        if (@thread_called == @thread_wait || @thread_called == Thread.current ) &&
+            self.empty?
+          raise "do success() or error() prior to calling wait()"
+        end
+        
+        ret = self.deq()
+        # requeue the message to distribute to another wait().
+        self.enq(ret)
+        if ret.is_a?(Exception)
+          raise ret
+        else
+          return ret
+        end
+      ensure
+        @thread_wait = nil
+        EventMachine.cancel_timer(@timer_sig) rescue nil
+      end
+    end
+
   end
 end
 
