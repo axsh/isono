@@ -13,7 +13,7 @@ module Rack
           logger.error(e)
           res.response(e)
         else
-          raise RsponseIncompleteError unless res.responded?
+          raise ResponseIncompleteError unless res.responded?
         end
       }
     end
