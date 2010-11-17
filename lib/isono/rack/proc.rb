@@ -15,19 +15,20 @@ module Rack
     end
     
     def call(req, res)
-      dup.__send__(:_call, req, res)
-    end
-
-    private
-    def _call(req, res)
       Thread.current["#{THREAD_LOCAL_KEY}/request"] = req
       Thread.current["#{THREAD_LOCAL_KEY}/response"] = res
       begin
-        # handle response in the block
-        @context.extend InjectMethods
-        @context.instance_eval(&@blk)
-        # send empty message back to client if the response is not handled in block.
-        res.response(nil) unless res.responded?
+        # create per-request context object from original.
+        c = @context.dup
+        c.extend InjectMethods
+        begin
+          c.instance_eval(&@blk)
+          # send empty message back to client if the response is not handled in block.
+          res.response(nil) unless res.responded?
+        rescue ::Exception => e
+          res.response(e)
+          raise e
+        end
       ensure
         Thread.current["#{THREAD_LOCAL_KEY}/request"] = nil
         Thread.current["#{THREAD_LOCAL_KEY}/response"] = nil
