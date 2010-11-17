@@ -55,7 +55,7 @@ module Rack
           @app.call(JobRequest.new(req.r, job), JobResponse.new(res.ctx, job))
           res.response(nil) unless res.responded?
         rescue Exception => e
-          res.response(e)
+          res.response(e) unless res.responded?
           raise e
         end
       }

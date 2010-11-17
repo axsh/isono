@@ -26,7 +26,7 @@ module Rack
           # send empty message back to client if the response is not handled in block.
           res.response(nil) unless res.responded?
         rescue ::Exception => e
-          res.response(e)
+          res.response(e) unless res.responded?
           raise e
         end
       ensure

@@ -11,7 +11,7 @@ module Rack
           app.call(req, res)
         rescue Exception => e
           logger.error(e)
-          res.response(e)
+          res.response(e) unless res.responded?
         else
           raise ResponseIncompleteError unless res.responded?
         end

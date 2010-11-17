@@ -10,7 +10,7 @@ module Rack
           ret = @app.call(req, res)
           res.response(ret) unless res.responded?
         rescue ::Exception => e
-          res.response(e)
+          res.response(e) unless res.responded?
           raise e
         end
       }
