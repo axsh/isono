@@ -9,10 +9,8 @@ module Isono
   autoload :Util, 'isono/util'
   autoload :ThreadPool, 'isono/thread_pool'
   autoload :Logger, 'isono/logger'
-  autoload :Monitor, 'isono/monitor'
   autoload :Manifest, 'isono/manifest'
   autoload :Serializer, 'isono/serializer'
-  autoload :EventRouter, 'isono/event_router'
   autoload :EventObservable, 'isono/event_observable'
   autoload :EventDelegateContext, 'isono/event_delegate_context'
   autoload :ResourceManifest, 'isono/resource_manifest'
@@ -50,11 +48,6 @@ module Isono
     autoload :EventLog, 'isono/models/event_log'
     autoload :JobState, 'isono/models/job_state'
   end
-  module Monitors
-    autoload :Base, 'isono/monitors/base'
-    autoload :PidFile, 'isono/monitors/pid_file'
-  end
-
 
   class << self
     def home
