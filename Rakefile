@@ -16,7 +16,7 @@ task :gem do
     s.required_ruby_version = '>= 1.8.7'
     
     s.files = Dir['{bin/*,lib/**/*.rb}'] +
-      %w(isono.gemspec)
+      %w(isono.gemspec LICENSE NOTICE)
     
     s.bindir='bin'
     s.executables = %w(agent cli resource_instance)
