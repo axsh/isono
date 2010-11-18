@@ -19,7 +19,7 @@ task :gem do
       %w(isono.gemspec LICENSE NOTICE)
     
     s.bindir='bin'
-    s.executables = %w(agent cli resource_instance)
+    s.executables = %w(cli)
     
     s.add_dependency "amqp", ">= 0.6.7"
     s.add_dependency "eventmachine", ">= 0.12.10"
