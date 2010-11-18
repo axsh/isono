@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Isono
-  VERSION='0.0.1'
+  VERSION='0.1.0'
 
   autoload :Node, 'isono/node'
   autoload :AmqpClient, 'isono/amqp_client'

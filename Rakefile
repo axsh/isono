@@ -10,7 +10,10 @@ task :gem do
   spec = Gem::Specification.new do |s|
     s.platform = Gem::Platform::RUBY
     s.version = Isono::VERSION
-    s.summary = ""
+    s.authors = ['axsh Ltd.', 'Masahiro Fujiwara']
+    s.email = ['dev@axsh.net', 'm-fujiwara@axsh.net']
+    s.homepage = 'http://github.com/axsh/isono'
+    s.summary = 'Messageing and agent fabric'
     s.name = 'isono'
     s.require_path = 'lib'
     s.required_ruby_version = '>= 1.8.7'
@@ -28,9 +31,6 @@ task :gem do
 
     s.add_development_dependency 'bacon'
     s.add_development_dependency 'rake'
-    
-    s.description = <<-EOF
-EOF
   end
 
   File.open('isono.gemspec', 'w'){|f| f.write(spec.to_ruby) }
