@@ -54,8 +54,10 @@ module Isono
           def job(command, run_cb=nil, fail_cb=nil, &blk)
             app = if run_cb.is_a?(Proc)
                     proc {
-                      request.fail_cb do
-                        self.instance_eval(&fail_cb)
+                      if fail_cb.is_a?(Proc)
+                        request.fail_cb do
+                          self.instance_eval(&fail_cb) 
+                        end
                       end
 
                       self.instance_eval(&run_cb)
