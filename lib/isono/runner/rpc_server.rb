@@ -55,7 +55,7 @@ module Isono
             app = if run_cb.is_a?(Proc)
                     proc {
                       if fail_cb.is_a?(Proc)
-                        request.fail_cb do
+                        response.fail_cb do
                           self.instance_eval(&fail_cb) 
                         end
                       end
