@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 require 'digest/sha1'
-require 'hmac-sha1'
 require 'thread'
 require 'stringio'
 
