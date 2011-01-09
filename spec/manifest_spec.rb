@@ -1,11 +1,10 @@
+# encoding: utf-8
 require File.expand_path('../spec_helper', __FILE__)
 
 require 'isono'
+include Isono
 
-# force to load isono/manifest.rb using autoload.
-Isono::Manifest
-
-class MMStub < Isono::ManagerModules::Base
+class MMStub < Isono::NodeModules::Base
   config_section do 
     desc "conf1"
     conf1()
@@ -25,7 +24,7 @@ describe "Isono::Manifest Test" do
 
   it "config struct builder" do
     c = Isono::Manifest::ConfigStruct.new
-    Isono::Manifest::ConfigStructBuilder.new(c) { |b|
+    Isono::Manifest::ConfigStructBuilder.new(c).instance_eval { |b|
       desc "aaa"
       aaa
       desc "bbb"
@@ -37,6 +36,7 @@ describe "Isono::Manifest Test" do
 
     c.desc[:aaa].should.equal 'aaa'
     c.desc[:bbb].should.equal 'bbb'
+    c.aaa.should.nil?
     c.bbb.should.equal 1
     c.ccc.should.equal 2
   end

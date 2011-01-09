@@ -32,7 +32,8 @@ module Isono
       @config.app_root = app_root
 
       instance_eval(&blk) if blk
-      load_config
+      
+      load_config(@config_path) if @config_path
     end
 
     # Regist a node module class to be initialized/terminated.
@@ -79,18 +80,16 @@ module Isono
       end
       @config
     end
-
     
-    private
     # load config file and merge up with the config tree.
     # it will not work when the config_path is nil or the file is missed
-    def load_config
-      if @config_path && File.exist?(@config_path)
-        buf = File.read(@config_path) 
-        eval("#{buf}", binding, @config_path)
-      end
+    def load_config(path)
+      return unless File.exist?(path)
+      buf = File.read(path) 
+      eval("#{buf}", binding, path)
     end
 
+    private
     def resolve_abs_app_root(app_root_path)
       pt = Pathname.new(app_root_path)
       if pt.absolute?
