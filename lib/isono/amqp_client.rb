@@ -78,11 +78,20 @@ module Isono
           @settings
         end
       }
+      @amqp_client.connection_status { |t|
+        case t
+        when :connected
+          # here is tried also when reconnected
+          on_connect
+        when :disconnected
+          on_disconnected
+        end
+      }
+      # the block argument is called once at the initial connection.
       @amqp_client.callback {
-        on_connect
         if blk
           blk.arity == 1 ? blk.call(:success) : blk.call
-        end            
+        end
       }
       @amqp_client.errback {
         logger.error("Failed to connect to the broker: #{amqp_server_uri}")
@@ -104,6 +113,9 @@ module Isono
     end
 
     def on_connect
+    end
+
+    def on_disconnected
     end
     
     def on_close
