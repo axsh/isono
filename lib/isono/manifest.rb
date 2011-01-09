@@ -25,7 +25,7 @@ module Isono
     
     # @param [String] app_root Application root folder
     # @param [block]
-    def initialize(app_root, &blk)
+    def initialize(app_root='.', &blk)
       @node_modules = []
       resolve_abs_app_root(app_root)
       @config = ConfigStruct.new
