@@ -78,8 +78,10 @@ module Isono
       logger.info("Started : AMQP Server=#{amqp_server_uri.to_s}, ID=#{node_id}, token=#{boot_token}")
     end
 
-    def on_close
+    def close(&blk)
+      return unless connected?
       term_modules
+      super
     end
 
     private
