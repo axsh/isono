@@ -12,6 +12,7 @@ module Isono
     include EventObservable
 
     def self.inherited(klass)
+      super
       klass.class_eval {
         include Logger
       }
