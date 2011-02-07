@@ -18,25 +18,29 @@ module Isono
       @worker_threads = {}
       worker_num.times {
         t = Thread.new {
-          loop {
-            begin
-              while op = @queue.pop
-                if @queue.size > @opts[:stucked_queue_num] && Time.now - @last_stuck_warn_at > 5.0
-                  logger.warn("too many stacked workers: #{@queue.size}")
-                  @last_stuck_warn_at = Time.now
-                end
-                op.call
+          begin
+            while op = @queue.pop
+              if @queue.size > @opts[:stucked_queue_num] && Time.now - @last_stuck_warn_at > 5.0
+                logger.warn("too many stacked jobs: #{@queue.size}")
+                @last_stuck_warn_at = Time.now
               end
-            rescue WorkerTerminateError
-              # someone indicated to terminate this thread
-              # exit from the current loop
-              break
-            rescue Exception => e
-              self.logger.error(e)
+              
+              op.call
             end
-          }
-          @worker_threads.delete(Thread.current.__id__)
-          logger.info("#{Thread.current} is being terminated")
+          rescue WorkerTerminateError
+            # someone indicated to terminate this thread
+            # exit from the current loop
+            break
+          rescue Exception => e
+            logger.error(e)
+            retry
+          ensure
+            EM.schedule {
+              @worker_threads.delete(Thread.current.__id__)
+              logger.debug("#{Thread.current} is being terminated")
+            }
+          end
+          
         }
         @worker_threads[t.__id__] = t
       }
