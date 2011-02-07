@@ -100,8 +100,9 @@ module Isono
 
     # Immediatly shutdown all the worker threads
     def shutdown()
-      @worker_threads.each {|t|
-        t.raise WorkerTerminateError
+      @worker_threads.each {|id, t|
+        t.__send__(:raise, WorkerTerminateError)
+        Thread.pass
       }
     end
 
