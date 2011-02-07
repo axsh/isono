@@ -170,6 +170,7 @@ module Isono
         super()
         @thread_wait = th
         @timer_sig = EventMachine.add_timer(timeout) {
+          @on_timeout_hook.call if @on_timeout_hook
           error(TimeoutError.new)
         }
       end
@@ -179,11 +180,19 @@ module Isono
         @thread_called = Thread.current
       end
 
-
       def error(ex)
         raise TypeError unless ex.is_a?(Exception)
         self.enq(ex)
         @thread_called = Thread.current
+      end
+
+      def on_timeout(&blk)
+        @on_timeout_hook = blk
+      end
+
+      def cancel
+        EventMachine.cancel_timer(@timer_sig) rescue nil
+        @on_timeout_hook = nil
       end
 
       def wait
@@ -202,7 +211,7 @@ module Isono
         end
       ensure
         @thread_wait = nil
-        EventMachine.cancel_timer(@timer_sig) rescue nil
+        self.cancel
       end
     end
 
