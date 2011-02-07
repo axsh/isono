@@ -97,9 +97,7 @@ module Isono
         logger.error("Failed to connect to the broker: #{amqp_server_uri}")
         blk.call(:error) if blk && blk.arity == 1
       }
-      # Note: Thread.current[:mq] is utilized in amqp gem.
-      Thread.current[:mq] = ::MQ.new(@amqp_client)
-
+            
       self
     end
 
@@ -135,6 +133,10 @@ module Isono
       }
     end
 
+    def create_channel
+      MQ.new(@amqp_client)
+    end
+
     # Publish a message to the designated exchange.
     # 
     # @param [String] exname The exchange name
@@ -158,23 +160,6 @@ module Isono
         end
         ex.publish(Serializer.instance.marshal(message), opts)
       }
-    end
-
-    def define_queue(queue_name, exchange_name, opts={}, &blk)
-      q = amq.queue(queue_name, opts)
-      amq.exchanges.has_key? exchange_name
-      q.bind( exchange_name, opts ).subscribe &blk
-    end
-
-
-    def identity_queue(unique_id)
-      amq.direct('identity')
-      begin
-        define_queue("ident.#{unique_id}", "identity", {:exclusive=>true, :nowait=>false})
-      rescue MQ::Error => e
-        logger.error("The node having same ID already exists: #{unique_id}")
-        raise e
-      end
     end
 
   end

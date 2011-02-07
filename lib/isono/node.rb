@@ -70,8 +70,8 @@ module Isono
     def on_connect
       raise "node_id is not set" if node_id.nil?
 
-      #amq.prefetch(1)
-      identity_queue(node_id)
+      setup_identity_queue
+      @value_objects = {}
       init_modules
 
       fire_event(:node_ready, {:node_id=> self.node_id})
@@ -108,6 +108,15 @@ module Isono
         end
         logger.info("Terminated #{modclass.to_s}")
       }
+    end
+
+    def setup_identity_queue
+      amq = create_channel
+      amq.errback {
+        logger.error("The node has same node ID is running already")
+        exit(1)
+      }
+      amq.queue("ident.#{node_id}", {:exclusive=>true})
     end
 
     class ValueObject
