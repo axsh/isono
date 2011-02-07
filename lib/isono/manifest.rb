@@ -66,7 +66,7 @@ module Isono
     end
 
     def node_id
-      "#{@node_name}-#{@node_instance_id}"
+      "#{@node_name}.#{@node_instance_id}"
     end
 
     def config_path(path=nil)
