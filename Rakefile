@@ -18,8 +18,7 @@ task :gem do
     s.require_path = 'lib'
     s.required_ruby_version = '>= 1.8.7'
     
-    s.files = Dir['{bin/*,lib/**/*.rb}'] +
-      %w(isono.gemspec LICENSE NOTICE)
+    s.files = `git ls-files -c`.split("\n")
     
     s.bindir='bin'
     s.executables = %w(cli)
