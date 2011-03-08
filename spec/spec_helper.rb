@@ -52,3 +52,11 @@ def em_fork(main_cb, post_cb=nil)
     post_cb.call if post_cb
   }
 end
+
+class Bacon::Context
+  def em(desc, &blk)
+    it(desc) {
+      EM.run &blk
+    }
+  end
+end
