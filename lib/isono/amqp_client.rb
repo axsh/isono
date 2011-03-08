@@ -71,33 +71,35 @@ module Isono
         :pass=>broker_uri.password ||default[:pass]
       }
       opts.merge!(args) if args.is_a?(Hash)
-      
-      @amqp_client = ::AMQP.connect(opts)
-      @amqp_client.instance_eval {
-        def settings
-          @settings
-        end
+
+      prepare_connect {
+        @amqp_client = ::AMQP.connect(opts)
+        @amqp_client.instance_eval {
+          def settings
+            @settings
+          end
+        }
+        @amqp_client.connection_status { |t|
+          case t
+          when :connected
+            # here is tried also when reconnected
+            on_connect
+          when :disconnected
+            on_disconnected
+          end
+        }
+        # the block argument is called once at the initial connection.
+        @amqp_client.callback {
+          after_connect
+          if blk
+            blk.arity == 1 ? blk.call(self) : blk.call
+          end
+        }
+        @amqp_client.errback {
+          logger.error("Failed to connect to the broker: #{amqp_server_uri}")
+          blk.call(self) if blk && blk.arity == 1
+        }
       }
-      @amqp_client.connection_status { |t|
-        case t
-        when :connected
-          # here is tried also when reconnected
-          on_connect
-        when :disconnected
-          on_disconnected
-        end
-      }
-      # the block argument is called once at the initial connection.
-      @amqp_client.callback {
-        if blk
-          blk.arity == 1 ? blk.call(:success) : blk.call
-        end
-      }
-      @amqp_client.errback {
-        logger.error("Failed to connect to the broker: #{amqp_server_uri}")
-        blk.call(:error) if blk && blk.arity == 1
-      }
-            
       self
     end
 
@@ -115,21 +117,36 @@ module Isono
 
     def on_disconnected
     end
-    
+
     def on_close
     end
 
+    def before_connect
+    end
+
+    def after_connect
+    end
+
+    def before_close
+    end
+
+    def after_close
+    end
+    
     def close(&blk)
       return unless connected?
 
-      @amqp_client.close {
-        begin
-          on_close
-          blk.call if blk
-        ensure
-          @amqp_client = nil
-          Thread.current[:mq] = nil
-        end
+      prepare_close {
+        @amqp_client.close {
+          begin
+            on_close
+            after_close
+            blk.call if blk
+          ensure
+            @amqp_client = nil
+            Thread.current[:mq] = nil
+          end
+        }
       }
     end
 
@@ -162,5 +179,16 @@ module Isono
       }
     end
 
+    private
+    def prepare_connect(&blk)
+      before_connect
+      blk.call
+    end
+
+    def prepare_close(&blk)
+      before_close
+      blk.call
+    end
+    
   end
 end
