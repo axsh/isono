@@ -150,6 +150,10 @@ module Isono
       }
     end
 
+    # Create new AMQP channel object
+    #
+    # @note Do not have to close by user. Channel close is performed
+    #       as part of connection close.
     def create_channel
       MQ.new(@amqp_client)
     end
