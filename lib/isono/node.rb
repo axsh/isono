@@ -67,49 +67,53 @@ module Isono
       manifest.node_id
     end
 
-    def on_connect
+    def before_connect
       raise "node_id is not set" if node_id.nil?
 
-      setup_identity_queue
       @value_objects = {}
-      init_modules
 
-      fire_event(:node_ready, {:node_id=> self.node_id})
-      logger.info("Started : AMQP Server=#{amqp_server_uri.to_s}, ID=#{node_id}, token=#{boot_token}")
-    end
-
-    def close(&blk)
-      return unless connected?
-      term_modules
-      super
-    end
-
-    private
-    
-    def init_modules
       manifest.node_modules.each { |modclass, *args|
         if !@value_objects.has_key?(modclass)
           @value_objects[modclass] = vo = ValueObject.new(self, modclass)
 
-          if modclass.initialize_hook.is_a?(Proc)
-            vo.instance_eval(&modclass.initialize_hook)
-          end
-
-          logger.debug("Initialized #{modclass.to_s}")
+          node_hook_proc(:before_connect).call(modclass, *args)
         end
       }
     end
 
-    def term_modules
-      manifest.node_modules.reverse.each { |modclass, *args|
+    def after_connect
+      setup_identity_queue
+
+      manifest.node_modules.each &node_hook_proc(:after_connect)
+      # TODO: remove initialize_hook
+      manifest.node_modules.each &node_hook_proc(:initialize)
+      
+      logger.info("Started : AMQP Server=#{amqp_server_uri.to_s}, ID=#{node_id}, token=#{boot_token}")
+    end
+
+    def before_close
+      manifest.node_modules.reverse.each &node_hook_proc(:before_close)
+      # TODO: remove terminate_hook
+      manifest.node_modules.reverse.each &node_hook_proc(:terminate)
+    end
+
+    def after_close
+      manifest.node_modules.reverse.each &node_hook_proc(:after_close)
+    end
+
+    private
+
+    def node_hook_proc(hook)
+      proc { |modclass, *args|
+        node_hook = modclass.node_hooks[hook]
+        next unless node_hook.is_a?(Proc)
         vo = @value_objects[modclass]
-        if vo && modclass.terminate_hook.is_a?(Proc)
-          vo.instance_eval(&modclass.terminate_hook)
+        if vo 
+          vo.instance_eval(&node_hook)
         end
-        logger.info("Terminated #{modclass.to_s}")
       }
     end
-
+    
     def setup_identity_queue
       amq = create_channel
       amq.errback {
