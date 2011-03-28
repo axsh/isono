@@ -5,17 +5,9 @@ module Rack
   class Job < Decorator
     include Logger
 
-    # Response class for nothing response.
-    # It is used when the job request type is :submit.
-    class NullResponse < Response
-      def progress(ret)
-      end
-
-      def response(ret)
-      end
-    end
-
     class JobResponse < Response
+      attr_reader :job
+
       # @param [NodeModules::RpcChannel::ResponseContext] ctx
       # @param [NodeModules::JobWorker::JobContext] jobctx
       def initialize(ctx, jobctx)
@@ -30,6 +22,8 @@ module Rack
     end
 
     class JobRequest < Request
+      attr_reader :job
+      
       # @param [Hash] request_hash
       # @param [NodeModules::JobWorker::JobContext] jobctx
       def initialize(request_hash, jobctx)
@@ -44,30 +38,23 @@ module Rack
     end
     
     def call(req, res)
-      orig_res = res
-      case req.r[:job_request_type]
-      when :submit
-        res = NullResponse.new(res.ctx)
+      job = @job_worker.start do |job|
+        job.job_id = req.r[:job_id]
+        job.parent_job_id = req.r[:parent_job_id]
+        job.run_cb = proc {
+          begin
+            @app.call(JobRequest.new(req.r, job), JobResponse.new(res.ctx, job))
+            res.response(nil) unless res.responded?
+          rescue Exception => e
+            res.response(e) unless res.responded?
+            raise e
+          end
+        }
       end
-      
-      job = @job_worker.run(req.r[:parent_job_id]){
-        begin
-          @app.call(JobRequest.new(req.r, job), JobResponse.new(res.ctx, job))
-          res.response(nil) unless res.responded?
-        rescue Exception => e
-          res.response(e) unless res.responded?
-          raise e
-        end
-      }
 
-      case req.r[:job_request_type]
-      when :submit
-        orig_res.response(job.to_hash)
-      else
-        # send job context info back at the first progress message.
-        # following progress messages to be handled as usual.
-        res.progress(job.to_hash)
-      end
+      # send the new job context info back as the first progress message.
+      # the progress messages that follow will be handled as usual.
+      res.progress(job.to_hash)
     end
   end
 end
