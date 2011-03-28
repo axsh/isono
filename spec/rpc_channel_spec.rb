@@ -54,8 +54,10 @@ describe Isono::NodeModules::RpcChannel do
                    })
     
     EM.tick_loop {
-      #done.should.equal [1, 1]
-      EM.stop if done == [1, 1]
+      if done == [1, 1]
+        done.should.equal [1, 1]
+        EM.stop
+      end
     }
   end
   
