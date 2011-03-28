@@ -6,15 +6,17 @@ module Isono
   # Injects +logger+ method to the included class.
   # The output message from the logger methods starts the module name trailing message body.
   module Logger
+    @rootlogger = Log4r::Logger.new('Isono')
 
-    # Isono top level logger
-    rootlog = Log4r::Logger.new('Isono')
-    formatter = Log4r::PatternFormatter.new(:depth => 9999, # stack trace depth
-                                            :pattern => "%d %c [%l]: %M",
-                                            :date_format => "%Y/%m/%d %H:%M:%S"
-                                            )
-    rootlog.add(Log4r::StdoutOutputter.new('stdout', :formatter => formatter))
-    
+    def self.initialize(l4r_output=Log4r::StdoutOutputter.new('stdout'))
+      # Isono top level logger
+      formatter = Log4r::PatternFormatter.new(:depth => 9999, # stack trace depth
+                                              :pattern => "%d %c [%l]: %M",
+                                              :date_format => "%Y/%m/%d %H:%M:%S"
+                                              )
+      l4r_output.formatter = formatter
+      @rootlogger.add(l4r_output)
+    end
     
     def self.included(klass)
       klass.class_eval {
