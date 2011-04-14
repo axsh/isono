@@ -43,7 +43,7 @@ module Isono
            when 'Linux'
              `/sbin/ip route get 8.8.8.8`.split("\n")[0].split.last
            when 'SunOS'
-             `/sbin/ifconfig $(route get 1.1.1.1  | awk '$1 == "interface:" {print $2}') | awk '$1 == "inet" { print $2 }'`
+             `/sbin/ifconfig $(/usr/sbin/route -n get 1.1.1.1  | awk '$1 == "interface:" {print $2}') | awk '$1 == "inet" { print $2 }'`
            else
              raise "Unsupported platform to detect gateway IP address: #{`/bin/uname`}"
            end
