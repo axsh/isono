@@ -15,9 +15,9 @@ module Isono
                                               :date_format => "%Y/%m/%d %H:%M:%S"
                                               )
       l4r_output.formatter = formatter
-      @rootlogger.add(l4r_output)
+      @rootlogger.outputters = l4r_output
     end
-    
+
     def self.included(klass)
       klass.class_eval {
 
@@ -47,4 +47,12 @@ module Isono
     end
 
   end
+
+  # Set STDOUT as the default log output.
+  # To replace another log device, put the line below at the top of
+  # your code:
+  #  Isono::Logger.initialize(Log4r::SyslogOutputter.new('mysyslog'))
+  # To disable any of log output:
+  #  Isono::Logger.initialize(Log4r::Outputter.new('null'))
+  Logger.initialize
 end

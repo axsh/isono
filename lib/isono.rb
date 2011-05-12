@@ -2,13 +2,13 @@
 
 module Isono
   require 'isono/version'
+  require 'isono/logger'
   
   autoload :Node, 'isono/node'
   autoload :AmqpClient, 'isono/amqp_client'
   autoload :Daemonize, 'isono/daemonize'
   autoload :Util, 'isono/util'
   autoload :ThreadPool, 'isono/thread_pool'
-  autoload :Logger, 'isono/logger'
   autoload :Manifest, 'isono/manifest'
   autoload :Serializer, 'isono/serializer'
   autoload :EventObservable, 'isono/event_observable'
