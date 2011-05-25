@@ -28,7 +28,8 @@ module Isono
     autoload :JobCollector, 'isono/node_modules/job_collector'
   end  
   module Runner
-    autoload :Agent, 'isono/runner/agent'
+    autoload :Base, 'isono/runner/base'
+    autoload :CLI, 'isono/runner/cli'
     autoload :RpcServer, 'isono/runner/rpc_server'
   end
   module Rack
