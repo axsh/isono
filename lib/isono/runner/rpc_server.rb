@@ -133,64 +133,30 @@ module Isono
         load_module NodeModules::JobChannel
       end
       
-      def start(manifest=nil, &blk)
-        rpcsvr = Server.new(ARGV)
-        rpcsvr.run(manifest, &blk)
+      def start(manifest=nil, opts={}, &blk)
+        rpcsvr = Server.new(blk)
+        rpcsvr.run(manifest)
       end
       module_function :start
 
-      class Server
-        def initialize(argv)
-          @argv = argv.dup
-          
-          @options = {
-            :amqp_server_uri => URI.parse('amqp://guest:guest@localhost/'),
-          }
-          
-          parser.parse! @argv
+      class Server < Base
+        def initialize(builder_block)
+          super()
+          @builder_block = builder_block
         end
-        
-        def parser
-          @parser ||= OptionParser.new do |opts|
-            opts.banner = "Usage: agent [options]"
-            
-            opts.separator ""
-            opts.separator "Agent options:"
-            opts.on( "-i", "--id ID", "Manually specify the Node ID" ) {|str| @options[:node_id] = str }
-            opts.on( "-s", "--server AMQP_URI", "amqp broker server to connect" ) {|str|
-              begin
-                @options[:amqp_server_uri] = URI.parse(str)
-              rescue URI::InvalidURIError => e
-                abort "#{e}"
-              end
-            }
-          end
-        end
-        
-        def run(manifest=nil, &blk)
-          %w(EXIT).each { |i|
-            Signal.trap(i) { Isono::Node.stop }
-          }
-          
-          # .to_s to avoid nil -> String conversion failure.
-          if @options[:node_id]
-            manifest.node_instance_id(@options[:node_id])
-          elsif manifest.node_instance_id.nil?
-            abort("[ERROR]: manifest.node_istance_id is not set")
-          end
-          
-          EventMachine.epoll
-          EventMachine.run {
-            @node = Isono::Node.new(manifest)
-            @node.connect(@options[:amqp_server_uri], @options) do
-              self.instance_eval(&blk) if blk
-            end
-          }
-        end
-        
+
+        # DSL method
         def endpoint(endpoint, builder)
           raise TypeError unless builder.respond_to?(:build)
           builder.build(endpoint, @node)
+        end
+        
+        protected
+        def run_main(manifest=nil)
+          @node = Isono::Node.new(manifest)
+          @node.connect(@options[:amqp_server_uri]) do
+            self.instance_eval(&@builder_block) if @builder_block
+          end
         end
         
       end
