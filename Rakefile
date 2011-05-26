@@ -13,7 +13,7 @@ task :gem do
     s.authors = ['axsh Ltd.', 'Masahiro Fujiwara']
     s.email = ['dev@axsh.net', 'm-fujiwara@axsh.net']
     s.homepage = 'http://github.com/axsh/isono'
-    s.summary = 'Messageing and agent fabric'
+    s.summary = 'Messaging and agent fabric'
     s.name = 'isono'
     s.require_path = 'lib'
     s.required_ruby_version = '>= 1.8.7'
