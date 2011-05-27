@@ -7,6 +7,8 @@ module Isono
 
     class WorkerTerminateError < StandardError; end
     class TimeoutError < StandardError; end
+
+    attr_reader :queue
     
     def initialize(worker_num=1, name=nil, opts={})
       set_instance_logger(name)
