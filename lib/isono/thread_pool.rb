@@ -21,7 +21,7 @@ module Isono
           begin
             while op = @queue.pop
               if @queue.size > @opts[:stucked_queue_num] && Time.now - @last_stuck_warn_at > 5.0
-                logger.warn("too many stacked jobs: #{@queue.size}")
+                logger.warn("too many stucked jobs: #{@queue.size}")
                 @last_stuck_warn_at = Time.now
               end
               
