@@ -33,7 +33,6 @@ module Isono
             break
           rescue Exception => e
             logger.error(e)
-            retry
           ensure
             EM.schedule {
               @worker_threads.delete(Thread.current.__id__)
