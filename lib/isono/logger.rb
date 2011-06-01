@@ -11,7 +11,7 @@ module Isono
     def self.initialize(l4r_output=Log4r::StdoutOutputter.new('stdout'))
       # Isono top level logger
       formatter = Log4r::PatternFormatter.new(:depth => 9999, # stack trace depth
-                                              :pattern => "%d %c [%l]: %M",
+                                              :pattern => "%d %c thr=%h [%l]: %M",
                                               :date_format => "%Y/%m/%d %H:%M:%S"
                                               )
       l4r_output.formatter = formatter
