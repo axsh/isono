@@ -8,7 +8,7 @@ module Isono
     class WorkerTerminateError < StandardError; end
     class TimeoutError < StandardError; end
 
-    attr_reader :queue
+    attr_reader :queue, :name
     
     def initialize(worker_num=1, name=nil, opts={})
       set_instance_logger(name)
@@ -18,11 +18,13 @@ module Isono
       @last_stuck_warn_at = Time.now
       
       @worker_threads = {}
-      worker_num.times {
+      worker_num.times { |wid|
         t = Thread.new {
+          # Log4r::PatternFormatter can refer thread name as %h.
+          Thread.current[:name] = "#{name}[#{wid}/#{worker_num}]" if name
           begin
             while op = @queue.pop
-              if @queue.size > @opts[:stucked_queue_num] && Time.now - @last_stuck_warn_at > 5.0
+              if @queue.size > @opts[:stucked_queue_num] && Time.now - @last_stuck_warn_at > 30.0
                 logger.warn("too many stucked jobs: #{@queue.size}")
                 @last_stuck_warn_at = Time.now
               end
