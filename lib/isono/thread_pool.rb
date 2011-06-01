@@ -33,8 +33,13 @@ module Isono
             # someone indicated to terminate this thread
             # exit from the current loop
             break
-          rescue Exception => e
+          rescue ::Exception => e
             logger.error(e)
+            # worker thread should never die except from the
+            # termination using shutdown() method.
+            # any errors thrown by op.call will be caught here and
+            # back to @queue.pop.
+            retry
           ensure
             EM.schedule {
               @worker_threads.delete(Thread.current.__id__)
