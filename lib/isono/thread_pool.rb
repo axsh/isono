@@ -11,7 +11,6 @@ module Isono
     attr_reader :queue, :name
     
     def initialize(worker_num=1, name=nil, opts={})
-      set_instance_logger(name)
       @queue = ::Queue.new
       @name = name
       @opts = {:stucked_queue_num=>20}.merge(opts)
