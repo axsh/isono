@@ -28,8 +28,11 @@ module Isono
                 logger.warn("too many stucked jobs: #{@queue.size}")
                 @last_stuck_warn_at = Time.now
               end
-              
+
+              op_start_at = Time.now
               op.call
+              op_elapsed = Time.now - op_start_at
+              on_task_end(op_start_at, op_elapsed)
             end
           rescue WorkerTerminateError
             # someone indicated to terminate this thread
@@ -175,7 +178,14 @@ module Isono
 
     
     private
-    def thread_loop
+    # This hook allows to log the task took too long time.
+    # 
+    # def on_task_end(op_start_at, op_elapsed)
+    #   if op_elapsed > 10.0
+    #     logger.warn("Task took 10sec")
+    #   end
+    # end
+    def on_task_end(op_start_at, op_elapsed)
     end
      
   end
