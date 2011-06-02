@@ -45,9 +45,11 @@ module Isono
             # back to @queue.pop.
             retry
           ensure
+            tid = Thread.current.__id__
+            tname = Thread.current[:name] || Thread.current.to_s
             EM.schedule {
-              @worker_threads.delete(Thread.current.__id__)
-              logger.debug("#{Thread.current} is being terminated")
+              @worker_threads.delete(tid)
+              logger.info("Thread #{tname} is being terminated")
             }
           end
           
