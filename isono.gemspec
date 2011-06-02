@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{isono}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["axsh Ltd.", "Masahiro Fujiwara"]
-  s.date = %q{2011-05-27}
+  s.date = %q{2011-06-02}
   s.default_executable = %q{cli}
   s.email = ["dev@axsh.net", "m-fujiwara@axsh.net"]
   s.executables = ["cli"]
