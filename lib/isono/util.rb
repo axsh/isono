@@ -33,7 +33,7 @@ module Isono
     module_function :snake_case
     
     def gen_id(str=nil)
-      Digest::SHA1.hexdigest( (str.nil? ? rand.to_s : str) )
+      Digest::SHA1.hexdigest( (str.nil? ? ::Kernel.rand.to_s : str) )
     end
     module_function :gen_id
 

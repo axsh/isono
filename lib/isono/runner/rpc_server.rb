@@ -97,7 +97,6 @@ module Isono
             app = app_builder.call(@builders[:rpc])
             if app
               NodeModules::RpcChannel.new(node).register_endpoint(endpoint, Rack.build do
-                                                                    use Rack::ThreadPass
                                                                     run app
                                                                   end
                                                                   )

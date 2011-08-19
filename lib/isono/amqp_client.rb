@@ -4,7 +4,6 @@ require 'thread'
 
 require 'eventmachine'
 require 'amqp'
-require 'mq'
 
 require 'uri/generic'
 
@@ -155,7 +154,7 @@ module Isono
     # @note Do not have to close by user. Channel close is performed
     #       as part of connection close.
     def create_channel
-      MQ.new(@amqp_client)
+      AMQP::Channel.new(@amqp_client)
     end
 
     # Publish a message to the designated exchange.
