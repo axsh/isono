@@ -24,7 +24,7 @@ task :gem do
     s.bindir='bin'
     s.executables = %w(cli)
     
-    s.add_dependency "amqp", "0.7.0"
+    s.add_dependency "amqp", "0.7.4"
     s.add_dependency "eventmachine", "1.0.0.beta.3"
     s.add_dependency "statemachine", ">= 1.0.0"
     s.add_dependency "log4r"
