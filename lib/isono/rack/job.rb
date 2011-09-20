@@ -19,6 +19,16 @@ module Rack
       def fail_cb(&blk)
         @job.fail_cb = blk
       end
+
+      # Job may run in asynchronous mode. So response() should not
+      # raise error even when it is called multiple times during session.
+      def response(msg)
+        if responded?
+          Job.logger.info("Defered response message from #{@job.job_id}: #{msg}")
+        else
+          super(msg)
+        end
+      end
     end
 
     class JobRequest < Request
