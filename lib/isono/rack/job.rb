@@ -51,6 +51,7 @@ module Rack
       job = @job_worker.start do |job|
         job.job_id = req.r[:job_id]
         job.parent_job_id = req.r[:parent_job_id]
+        job.session_id = req.r[:session_id]
         job.run_cb = proc {
           begin
             @app.call(JobRequest.new(req.r, job), JobResponse.new(res.ctx, job))

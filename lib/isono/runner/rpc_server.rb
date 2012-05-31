@@ -37,6 +37,12 @@ module Isono
     module RpcServer
 
       class EndpointBuilder
+        def session_id
+          job_context.session_id
+        end
+        def job_context
+          Thread.current[Isono::NodeModules::JobWorker::JOB_CTX_KEY]
+        end
         module BuildMethods
           # @exmaple
           # job 'command1', proc {
