@@ -13,6 +13,7 @@ module Isono
         primary_key :id, :type => Integer, :auto_increment=>true, :unsigned=>true
         column :job_id, :varchar, :size=>80, :null=>false
         column :parent_job_id, :varchar, :size=>80, :null=>true
+        column :session_id, :varchar, :size=>80, :null=>true
         column :node_id, :varchar, :size=>80, :null=>false
         column :state, :varchar, :size=>10, :null=>false
         column :message, :text, :null=>false, :default=>''
