@@ -17,7 +17,7 @@ module Isono
         column :node_id, :varchar, :size=>80, :null=>false
         column :state, :varchar, :size=>10, :null=>false
         column :message, :text, :null=>false, :default=>''
-        column :job_name, :varchar, :size=>255, :null=>false, :default=>''
+        column :job_name, :varchar, :size=>255, :null=>true
         column :created_at, :datetime, :null=>false
         column :updated_at, :datetime, :null=>false
         column :started_at, :datetime, :null=>true
