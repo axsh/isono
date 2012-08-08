@@ -41,6 +41,7 @@ module Isono
     autoload :Job, 'isono/rack/job'
     autoload :DataStore, 'isono/rack/data_store'
     autoload :Map, 'isono/rack/map'
+    autoload :Sequel, 'isono/rack/sequel'
   end
 
   module Models
