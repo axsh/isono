@@ -16,7 +16,7 @@ task :gem do
     s.summary = 'Messaging and agent fabric'
     s.name = 'isono'
     s.require_path = 'lib'
-    s.required_ruby_version = '>= 1.8.7'
+    s.required_ruby_version = '>= 1.9.2'
     s.rubyforge_project = 'isono'
     
     s.files = `git ls-files -c`.split("\n")
@@ -26,7 +26,6 @@ task :gem do
     
     s.add_dependency "amqp", "0.7.4"
     s.add_dependency "eventmachine", "1.0.0.beta.4"
-    s.add_dependency "statemachine", ">= 1.0.0"
     s.add_dependency "log4r"
 
     s.add_development_dependency 'bacon'

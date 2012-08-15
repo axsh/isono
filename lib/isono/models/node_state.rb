@@ -27,42 +27,32 @@ module Isono
       before_update(:set_updated_at) do
         self.updated_at = Time.now
       end
-
-
-      def state_machine
-        model = self
-        st = Statemachine.build do
-          startstate :init
-          trans :init,    :on_ping,      :online, proc {model.last_ping_at = Time.now}
-          trans :online,  :on_timeout,   :timeout
-          trans :timeout, :on_ping,      :online, proc {model.last_ping_at = Time.now}
-          trans :online,  :on_unmonitor, :offline
-          trans :timeout, :on_unmonitor, :offline
-          # do nothing on transition from and to the same state
-          trans :online,  :on_ping,      :online, proc {model.last_ping_at = Time.now}
-          trans :timeout, :on_timeout,   :timeout
-
-          on_entry_of :online, proc {
-            model.state = :online
-          }
-          on_entry_of :timeout, proc {
-            model.state = :timeout
-          }
-          on_entry_of :offline, proc {
-            model.state = :offline
-          }
-        end
-
-        if self[:state]
-          if st.has_state(self[:state].to_sym)
-            st.state = self[:state].to_sym
-          else
-            raise "Unknown state: #{self[:state]}"
-          end
+      def after_initialize
+        self[:state] = :init
+      end
+      
+      def process_event(ev, *args)
+        case [ev, self.state]
+        when [:on_ping, :init]
+          self.state = :online
+          self.last_ping_at = Time.now
+        when [:on_ping, :timeout]
+          self.state = :online
+          self.last_ping_at = Time.now
+        when [:on_ping, :online]
+          self.state = :online
+          self.last_ping_at = Time.now
+        when [:on_unmonitor, :online]
+          self.state = :offline
+        when [:on_unmonitor, :timeout]
+          self.state = :offline
+        when [:on_timeout, :online]
+          self.state = :timeout
+        when [:on_timeout, :timeout]
+          self.state = :timeout
         else
-          st.reset
+          raise "Unknown state transition: #{ev}, #{self.state}"
         end
-        st
       end
 
     end
