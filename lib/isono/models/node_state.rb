@@ -25,24 +25,20 @@ module Isono
       end
       
       def process_event(ev, *args)
-        case [ev, self.state]
-        when [:on_ping, :init]
-          self.state = :online
-          self.last_ping_at = Time.now
-        when [:on_ping, :timeout]
-          self.state = :online
-          self.last_ping_at = Time.now
-        when [:on_ping, :online]
+        case [ev, self.state.to_sym]
+        when [:on_ping, :online], [:on_ping, :init], [:on_ping, :timeout]
           self.state = :online
           self.last_ping_at = Time.now
         when [:on_unmonitor, :online]
           self.state = :offline
         when [:on_unmonitor, :timeout]
           self.state = :offline
-        when [:on_timeout, :online]
+        when [:on_unmonitor, :init]
+          self.state = :offline
+        when [:on_timeout, :online], [:on_timeout, :timeout]
           self.state = :timeout
-        when [:on_timeout, :timeout]
-          self.state = :timeout
+        when [:on_timeout, :init]
+          # Do nothing
         else
           raise "Unknown state transition: #{ev}, #{self.state}"
         end
