@@ -7,7 +7,7 @@ module Isono
     class JobState < Sequel::Model
       include Logger
       plugin :schema
-      plugin :hook_class_methods
+      plugin :timestamps, :update_on_create=>true
 
       set_schema {
         primary_key :id, :type => Integer, :auto_increment=>true, :unsigned=>true
@@ -24,13 +24,6 @@ module Isono
         column :finished_at, :datetime, :null=>true
         index :job_id, {:unique=>true}
       }
-
-      before_create(:set_created_at) do
-        self.created_at = self.updated_at= Time.now
-      end
-      before_update(:set_updated_at) do
-        self.updated_at= Time.now
-      end
 
     end
   end

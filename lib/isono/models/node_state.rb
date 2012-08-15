@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
 require 'sequel/model'
-require 'statemachine'
 
 module Isono
   module Models
     class NodeState < Sequel::Model
       include Logger
       plugin :schema
-      plugin :hook_class_methods
+      plugin :timestamps, :update_on_create=>true
 
       set_schema {
         primary_key :id, :type => Integer, :auto_increment=>true, :unsigned=>true
@@ -21,12 +20,6 @@ module Isono
         index :node_id, {:unique=>true}
       }
 
-      before_create(:set_created_at) do
-        self.updated_at = self.created_at = Time.now
-      end
-      before_update(:set_updated_at) do
-        self.updated_at = Time.now
-      end
       def after_initialize
         self[:state] = :init
       end
