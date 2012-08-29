@@ -127,9 +127,13 @@ module Isono
 
         def initialize(node)
           @node = node
+          after_initialize
+        end
+
+        protected
+        def after_initialize
         end
       end
-      
 
       DEFAULT_MANIFEST = Manifest.new(Dir.pwd) do
         load_module NodeModules::EventChannel
