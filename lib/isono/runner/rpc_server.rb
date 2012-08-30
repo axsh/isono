@@ -80,35 +80,43 @@ module Isono
             add(:rpc, command, &blk)
           end
 
-          def build(endpoint, node)
-            helper_context = self.new(node)
-            
-            app_builder = lambda { |builders|
-              unless builders.empty?
-                map_app = Rack::Map.new
-                builders.each { |b|
-                  b.call(map_app, helper_context)
-                }
-                map_app
-              end
-            }
+          def concurrency(num)
+            raise ArgumentError unless num.is_a?(Fixnum)
+            @concurrency = num
+          end
 
+          def job_thread_pool(thread_pool)
+            raise ArgumentError unless thread_pool.is_a?(Isono::ThreadPool)
+            @job_thread_pool = thread_pool
+          end
+          
+          def setup(endpoint_name, builder)
+            app_builder = lambda { |builder_hooks|
+              return nil if builder_hooks.empty?
+              map_app = Rack::Map.new
+              builder_hooks.each { |b|
+                b.call(map_app, builder)
+              }
+              map_app
+            }
+            
             app = app_builder.call(@builders[:job])
             if app
-              NodeModules::JobChannel.new(node).register_endpoint(endpoint, Rack.build do
-                                                                    run app
-                                                                  end)
+              builder.job_channel.register_endpoint(endpoint_name,
+                                                    Rack.build do
+                                                      run app
+                                                    end,
+                                                    {:concurrency=>@concurrency,
+                                                      :thread_pool=>@job_thread_pool})
             end
             
             app = app_builder.call(@builders[:rpc])
             if app
-              NodeModules::RpcChannel.new(node).register_endpoint(endpoint, Rack.build do
-                                                                    run app
-                                                                  end
-                                                                  )
+              builder.rpc_channel.register_endpoint(endpoint, Rack.build do
+                                                      run app
+                                                    end, {:prefetch=>@concurrency})
             end
           end
-          
           
           protected
           def add(type, command, &blk)
@@ -121,14 +129,28 @@ module Isono
         def self.inherited(klass)
           klass.class_eval {
             @builders = {:job=>[], :rpc=>[]}
+            @concurrency = 1
+            @job_thread_pool = nil
             extend BuildMethods
           }
         end
 
         def initialize(node)
           @node = node
+          @rpc_channel = NodeModules::RpcChannel.new(@node)
+          @job_channel = NodeModules::JobChannel.new(@node)
           after_initialize
         end
+
+        def job_channel
+          @job_channel
+        end
+        alias :job :job_channel
+
+        def rpc_channel
+          @rpc_channel
+        end
+        alias :rpc :rpc_channel
 
         protected
         def after_initialize
@@ -151,13 +173,15 @@ module Isono
       class Server < Base
         def initialize(builder_block)
           super()
+          @endpoints = {}
           @builder_block = builder_block
         end
 
         # DSL method
-        def endpoint(endpoint, builder)
-          raise TypeError unless builder.respond_to?(:build)
-          builder.build(endpoint, @node)
+        def endpoint(endpoint, builder_class, *args)
+          raise ArgumentError unless builder_class.is_a?(Class) && builder_class < EndpointBuilder
+          raise "Duplicate endpoint name: #{endpoint}" if @endpoints[endpoint.to_s]
+          @endpoints[endpoint.to_s] = builder_class.new(@node, *args)
         end
         
         protected
@@ -165,6 +189,8 @@ module Isono
           @node = Isono::Node.new(manifest)
           @node.connect(@options[:amqp_server_uri]) do
             self.instance_eval(&@builder_block) if @builder_block
+
+            @endpoints.each {|name, i| i.class.setup(name, i) }
           end
         end
         

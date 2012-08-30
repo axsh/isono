@@ -44,6 +44,7 @@ module Rack
     
     def initialize(app, job_worker)
       super(app)
+      raise ArgumentError unless job_worker.respond_to?(:start)
       @job_worker = job_worker
     end
     
