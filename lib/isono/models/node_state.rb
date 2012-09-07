@@ -21,7 +21,7 @@ module Isono
       }
 
       def after_initialize
-        self[:state] = :init
+        self[:state] ||= :init
       end
       
       def process_event(ev, *args)
