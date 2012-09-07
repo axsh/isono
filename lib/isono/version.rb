@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
 module Isono
-  VERSION='0.2.14'
+  VERSION='0.2.15'
 end
