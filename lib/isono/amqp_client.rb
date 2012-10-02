@@ -115,6 +115,19 @@ module Isono
     end
 
     def on_disconnected
+      logger.info("AMQP connection disconnected")
+      prepare_close {
+        @amqp_client.close {
+          begin
+            on_close
+            after_close
+          ensure
+            @amqp_client = nil
+            Thread.current[:mq] = nil
+            EM.stop { exit }
+          end
+        }
+      }
     end
 
     def on_close
