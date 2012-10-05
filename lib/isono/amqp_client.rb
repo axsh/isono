@@ -79,6 +79,7 @@ module Isono
           end
 
           @on_disconnect = Proc.new do
+            # This block will be executed when you start the Agent if the AMQP server has been stopped.
             Isono.at_disconnected.each do |blk|
               blk.call
             end
@@ -91,6 +92,7 @@ module Isono
             # here is tried also when reconnected
             on_connect
           when :disconnected
+            # This block is executed if the AMQP server goes down during startup.
             on_disconnected
             Isono.at_disconnected.each do |blk|
               blk.call
