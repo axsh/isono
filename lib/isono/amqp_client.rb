@@ -77,6 +77,14 @@ module Isono
           def settings
             @settings
           end
+
+          @on_disconnect = Proc.new do
+            # This block will be executed when you start the Agent if the AMQP server has been stopped.
+            Isono.at_disconnected.each do |blk|
+              blk.call
+            end
+            blk.call(:error)
+          end
         }
         @amqp_client.connection_status { |t|
           case t
@@ -84,7 +92,11 @@ module Isono
             # here is tried also when reconnected
             on_connect
           when :disconnected
+            # This block is executed if the AMQP server goes down during startup.
             on_disconnected
+            Isono.at_disconnected.each do |blk|
+              blk.call
+            end
           end
         }
         # the block argument is called once at the initial connection.
@@ -93,10 +105,6 @@ module Isono
           if blk
             blk.arity == 1 ? blk.call(self) : blk.call
           end
-        }
-        @amqp_client.errback {
-          logger.error("Failed to connect to the broker: #{amqp_server_uri}")
-          blk.call(self) if blk && blk.arity == 1
         }
       }
       self
@@ -115,19 +123,6 @@ module Isono
     end
 
     def on_disconnected
-      logger.info("AMQP connection disconnected")
-      prepare_close {
-        @amqp_client.close {
-          begin
-            on_close
-            after_close
-          ensure
-            @amqp_client = nil
-            Thread.current[:mq] = nil
-            EM.stop { exit }
-          end
-        }
-      }
     end
 
     def on_close

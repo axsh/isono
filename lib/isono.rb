@@ -59,5 +59,13 @@ module Isono
         File.expand_path('../../', __FILE__)
       end
     end
+
+    def at_disconnected(&blk)
+      @disconnected ||= []
+      if blk.is_a?(Proc)
+        @disconnected << blk
+      end
+      @disconnected
+    end
   end
 end
