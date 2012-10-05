@@ -91,6 +91,7 @@ module Isono
             # here is tried also when reconnected
             on_connect
           when :disconnected
+            on_disconnected
             Isono.at_disconnected.each do |blk|
               blk.call
             end
