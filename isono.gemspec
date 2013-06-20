@@ -14,28 +14,28 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9.2")
   s.rubyforge_project = "isono"
-  s.rubygems_version = "1.8.24"
+  s.rubygems_version = "2.0.3"
   s.summary = "Messaging and agent fabric"
 
   if s.respond_to? :specification_version then
-    s.specification_version = 3
+    s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<amqp>, ["= 0.7.4"])
-      s.add_runtime_dependency(%q<eventmachine>, ["= 1.0.0.beta.4"])
+      s.add_runtime_dependency(%q<eventmachine>, ["~> 1.0.0"])
       s.add_runtime_dependency(%q<log4r>, [">= 0"])
       s.add_development_dependency(%q<bacon>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
     else
       s.add_dependency(%q<amqp>, ["= 0.7.4"])
-      s.add_dependency(%q<eventmachine>, ["= 1.0.0.beta.4"])
+      s.add_dependency(%q<eventmachine>, ["~> 1.0.0"])
       s.add_dependency(%q<log4r>, [">= 0"])
       s.add_dependency(%q<bacon>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
     end
   else
     s.add_dependency(%q<amqp>, ["= 0.7.4"])
-    s.add_dependency(%q<eventmachine>, ["= 1.0.0.beta.4"])
+    s.add_dependency(%q<eventmachine>, ["~> 1.0.0"])
     s.add_dependency(%q<log4r>, [">= 0"])
     s.add_dependency(%q<bacon>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
