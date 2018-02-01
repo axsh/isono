@@ -19,7 +19,7 @@ task :gem do
     s.required_ruby_version = '>= 1.9.2'
     s.rubyforge_project = 'isono'
     
-    s.files = `git ls-files -c`.split("\n")
+    s.files = [%q{LICENSE}, %q{NOTICE}, %q{Rakefile}, %q{isono.gemspec}] + Dir['lib/**/*.rb', 'spec/*.rb', 'tasks/*.rake', 'bin/cli']
     
     s.bindir='bin'
     s.executables = %w(cli)
