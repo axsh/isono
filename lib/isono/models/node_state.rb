@@ -26,7 +26,7 @@ module Isono
       
       def process_event(ev, *args)
         case [ev, self.state.to_sym]
-        when [:on_ping, :online], [:on_ping, :init], [:on_ping, :timeout]
+        when [:on_ping, :online], [:on_ping, :init], [:on_ping, :timeout], [:on_ping, :offline]
           self.state = :online
           self.last_ping_at = Time.now
         when [:on_unmonitor, :online]
