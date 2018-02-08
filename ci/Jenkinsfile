@@ -30,6 +30,7 @@ BUILD_STAGE=${build_stage}
 BUILD_OS=${build_os}
 BUILD_ID=${env.BUILD_ID}
 REBUILD=${buildParams.REBUILD ?: ''}
+RELEASE_SUFFIX=${RELEASE_SUFFIX}
 # https://issues.jenkins-ci.org/browse/JENKINS-30252
 GIT_BRANCH=${env.BRANCH_NAME}
 BRANCH_NAME=${env.BRANCH_NAME}
@@ -69,6 +70,7 @@ node() {
     stage "Checkout"
     checkout scm
     load_build_parameter('./ci/build.env.default')
+    RELEASE_SUFFIX=sh(returnStdout: true, script: "./ci/scripts/gen-dev-build-tag.sh").trim()
 }
 
 // Using .each{} hits "a CPS-transformed closure is not yet supported (JENKINS-26481)"
