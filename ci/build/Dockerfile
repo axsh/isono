@@ -1,5 +1,7 @@
 FROM centos:6
 
+ARG REPO_BASE_URL
+
 COPY ci/build/fastestmirror.conf /etc/yum/pluginconf.d/
 # WORKDIR creates non-exisiting path
 WORKDIR /var/tmp/isono
