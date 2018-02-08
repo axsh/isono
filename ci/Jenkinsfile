@@ -58,6 +58,8 @@ def stage_build(build_stage, build_os) {
       withCredentials([usernamePassword(credentialsId: 'shinbashi-jenkins', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
         write_build_env(build_stage, build_os)
         sh "./ci/docker-wrapper.sh ./build.env ${label}"
+        stage "Collect GEMS:${label}"
+        sh "./ci/scripts/gemsync.sh ./build.env"
       }
     }catch(hudson.AbortException err) {
       println err
