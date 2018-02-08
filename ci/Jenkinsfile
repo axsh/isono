@@ -1,0 +1,87 @@
+#!groovy
+
+// http://stackoverflow.com/questions/37425064/how-to-use-environment-variables-in-a-groovy-function-using-a-jenkinsfile
+import groovy.transform.Field
+@Field final BUILD_STAGE_TARGETS=['build']
+@Field final BUILD_OS_TARGETS=['el6']
+@Field buildParams = [:]
+
+def load_build_parameter(envPath) {
+  readFile(envPath).split("\r?\n").each { String line ->
+    if(line.matches("^#.*")){
+      // Skip and go to next line.
+      return
+    }
+    arr = line.split("=")
+    buildParams.put(arr[0], arr[1])
+  }
+}
+
+// Environment variables supplied by Jenkins system configuration:
+// env.REPO_BASE_DIR
+// env.BUILD_CACHE_DIR
+def write_build_env(build_stage, build_os) {
+  def build_env="""# These parameters are read from bash and docker --env-file.
+# So do not use single or double quote for the value part.
+LEAVE_CONTAINER=${buildParams.LEAVE_CONTAINER ?: ''}
+REPO_BASE_URL=${env.REPO_BASE_URL ?: ''}
+BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR ?: ''}
+BUILD_STAGE=${build_stage}
+BUILD_OS=${build_os}
+BUILD_ID=${env.BUILD_ID}
+REBUILD=${buildParams.REBUILD ?: ''}
+RELEASE_SUFFIX=${RELEASE_SUFFIX}
+# https://issues.jenkins-ci.org/browse/JENKINS-30252
+GIT_BRANCH=${env.BRANCH_NAME}
+BRANCH_NAME=${env.BRANCH_NAME}
+BRANCH=${env.BRANCH_NAME}
+"""
+  writeFile(file: "build.env", text: build_env)
+}
+
+def checkout_and_merge() {
+    checkout scm
+    // Does not work for private repository
+    // sh "git fetch --no-tags --progress origin +refs/heads/master:refs/remotes/origin/master"
+    // sh "git -c \"user.name=Axsh Bot\" -c \"user.email=dev@axsh.net\" merge origin/master"
+}
+
+@Field RELEASE_SUFFIX=null
+@Field SHA=null
+
+def stage_build(build_stage, build_os) {
+  def label = "$build_stage.$build_os"
+  node(label) {
+    stage "${build_stage} ${label}"
+    checkout_and_merge()
+    try {
+      withCredentials([usernamePassword(credentialsId: 'shinbashi-jenkins', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+        write_build_env(build_stage, build_os)
+        sh "./ci/docker-wrapper.sh ./build.env ${label}"
+      }
+    }catch(hudson.AbortException err) {
+      println err
+      error err.message
+    }
+  }
+}
+
+node() {
+    stage "Checkout"
+    checkout scm
+    load_build_parameter('./ci/build.env.default')
+    RELEASE_SUFFIX=sh(returnStdout: true, script: "./ci/scripts/gen-dev-build-tag.sh").trim()
+}
+
+// Using .each{} hits "a CPS-transformed closure is not yet supported (JENKINS-26481)"
+build_os_targets=BUILD_OS_TARGETS.clone()
+build_stage_targets=BUILD_STAGE_TARGETS.clone()
+if( buildParams.BUILD_OS != "all" ){
+  build_os_targets = buildParams.BUILD_OS.split(",").collect{ it.trim() }
+}
+
+for( build_os in build_os_targets) {
+  for( build_stage in build_stage_targets) {
+     stage_build("$build_stage", "$build_os")
+  }
+}
