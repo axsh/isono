@@ -159,6 +159,7 @@ module Isono
 
       DEFAULT_MANIFEST = Manifest.new(Dir.pwd) do
         load_module NodeModules::EventChannel
+        load_module NodeModules::DirectChannel
         load_module NodeModules::RpcChannel
         load_module NodeModules::JobWorker
         load_module NodeModules::JobChannel
