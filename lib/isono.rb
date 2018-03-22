@@ -19,6 +19,7 @@ module Isono
     autoload :Base, 'isono/node_modules/base'
     autoload :DataStore, 'isono/node_modules/data_store'
     autoload :EventChannel, 'isono/node_modules/event_channel'
+    autoload :DirectChannel, 'isono/node_modules/direct_channel'
     autoload :RpcChannel, 'isono/node_modules/rpc_channel'
     autoload :NodeHeartbeat, 'isono/node_modules/node_heartbeat'
     autoload :NodeCollector, 'isono/node_modules/node_collector'
