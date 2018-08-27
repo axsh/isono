@@ -89,6 +89,15 @@ module Isono
       eval("#{buf}", binding, path)
     end
 
+    def load_config_foreach(path)
+      File.foreach(path) do |f|
+        if f.match(/^config/)
+          m = f.match(/^config.(\w+)/)
+          eval("#{f}", binding, path) if config.respond_to?(m[1].to_sym)
+        end
+      end
+    end
+
     private
     def resolve_abs_app_root(app_root_path)
       pt = Pathname.new(app_root_path)
